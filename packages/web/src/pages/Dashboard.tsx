@@ -191,43 +191,39 @@ export const Dashboard: React.FC = () => {
   const recentEntries = entries.slice(0, 3);
 
   return (
-    <div className="min-h-screen bg-bg-primary">
-      {/* Header */}
-      <div className="bg-bg-secondary border-b border-border-primary">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-bold text-text-primary">PrivyCycle</h1>
-              <p className="text-text-secondary">Your private period tracker</p>
-            </div>
-            <div className="flex items-center space-x-4">
-              <div className="text-sm text-text-secondary">
-                {entries.length} entries • 🔒 Encrypted
-              </div>
-              <Button variant="ghost" size="sm" onClick={debugStorage}>
-                Debug Storage
-              </Button>
-              <Button variant="ghost" size="sm" onClick={clearStorageAndRetry}>
-                Clear Data
-              </Button>
-              <Button 
-                variant="primary" 
-                size="sm"
-                onClick={() => setIsWizardOpen(true)}
-              >
-                Log Entry
-              </Button>
-            </div>
+    <div className="bg-bg-primary">
+      {/* Mobile-First Header with Quick Actions */}
+      <div className="p-4 border-b border-border-primary">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h1 className="text-xl font-bold text-text-primary">Dashboard</h1>
+            <p className="text-sm text-text-secondary">{entries.length} entries tracked</p>
           </div>
+          <Button 
+            variant="primary" 
+            size="sm"
+            onClick={() => setIsWizardOpen(true)}
+            className="shrink-0"
+          >
+            + Log
+          </Button>
+        </div>
+        
+        {/* Debug buttons - hidden on mobile, shown on desktop */}
+        <div className="hidden md:flex space-x-2">
+          <Button variant="ghost" size="sm" onClick={debugStorage}>
+            Debug Storage
+          </Button>
+          <Button variant="ghost" size="sm" onClick={clearStorageAndRetry}>
+            Clear Data
+          </Button>
         </div>
       </div>
 
-      {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          
-          {/* Current Cycle Status */}
-          <div className="lg:col-span-2">
+      {/* Main Content - Mobile optimized */}
+      <div className="p-4 space-y-6">
+        {/* Current Cycle Status - Full width on mobile */}
+        <div>
             <Card hover className="mb-6">
               <CardHeader>
                 <CardTitle>Current Cycle</CardTitle>
@@ -319,95 +315,90 @@ export const Dashboard: React.FC = () => {
             </Card>
           </div>
 
-          {/* Sidebar */}
-          <div className="space-y-6">
-            
-            {/* Quick Actions */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Quick Actions</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  <Button 
-                    variant="primary" 
-                    className="w-full"
-                    onClick={() => setIsWizardOpen(true)}
-                  >
-                    Period Started
-                  </Button>
-                  <Button 
-                    variant="secondary" 
-                    className="w-full"
-                    onClick={() => setIsWizardOpen(true)}
-                  >
-                    Log Symptoms
-                  </Button>
-                  <Button variant="ghost" className="w-full">
-                    Add Note
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
+        {/* Quick Actions */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Quick Actions</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              <Button 
+                variant="primary" 
+                className="w-full"
+                onClick={() => setIsWizardOpen(true)}
+              >
+                Period Started
+              </Button>
+              <Button 
+                variant="secondary" 
+                className="w-full"
+                onClick={() => setIsWizardOpen(true)}
+              >
+                Log Symptoms
+              </Button>
+              <Button variant="ghost" className="w-full">
+                Add Note
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
 
-            {/* Insights */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Insights</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="p-3 bg-success/10 border border-success/20 rounded-lg">
-                    <div className="text-sm font-medium text-success mb-1">
-                      Regular Cycles
-                    </div>
-                    <div className="text-xs text-text-secondary">
-                      Your cycles have been very consistent over the past 3 months
-                    </div>
-                  </div>
-                  <div className="p-3 bg-accent-primary/10 border border-accent-primary/20 rounded-lg">
-                    <div className="text-sm font-medium text-accent-primary mb-1">
-                      Energy Pattern
-                    </div>
-                    <div className="text-xs text-text-secondary">
-                      You typically feel most energetic around day 14-16
-                    </div>
-                  </div>
+        {/* Insights */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Insights</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="p-3 bg-success/10 border border-success/20 rounded-lg">
+                <div className="text-sm font-medium text-success mb-1">
+                  Regular Cycles
                 </div>
-              </CardContent>
-            </Card>
+                <div className="text-xs text-text-secondary">
+                  Your cycles have been very consistent over the past 3 months
+                </div>
+              </div>
+              <div className="p-3 bg-accent-primary/10 border border-accent-primary/20 rounded-lg">
+                <div className="text-sm font-medium text-accent-primary mb-1">
+                  Energy Pattern
+                </div>
+                <div className="text-xs text-text-secondary">
+                  You typically feel most energetic around day 14-16
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
-            {/* Next Period Prediction */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Prediction</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {showPredictionPlaceholder ? (
-                  <div className="text-center text-text-secondary py-8">
-                    <div className="text-lg mb-2">No prediction available</div>
-                    <div className="mb-4">Log more cycle data to see period predictions here.</div>
-                  </div>
-                ) : (
-                  <div className="text-center">
-                    <div className="text-lg font-semibold text-text-primary mb-2">
-                      Next Period
-                    </div>
-                    <div className="text-2xl font-bold text-accent-primary mb-1">
-                      {prediction.nextPeriodDate.toLocaleDateString()}
-                    </div>
-                    <div className="text-sm text-text-secondary mb-4">
-                      {Math.round(prediction.confidence * 100)}% confidence
-                    </div>
-                    <div className="text-xs text-text-muted">
-                      Based on your cycle history
-                    </div>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </div>
-        </div>
+        {/* Next Period Prediction */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Prediction</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {showPredictionPlaceholder ? (
+              <div className="text-center text-text-secondary py-8">
+                <div className="text-lg mb-2">No prediction available</div>
+                <div className="mb-4">Log more cycle data to see period predictions here.</div>
+              </div>
+            ) : (
+              <div className="text-center">
+                <div className="text-lg font-semibold text-text-primary mb-2">
+                  Next Period
+                </div>
+                <div className="text-2xl font-bold text-accent-primary mb-1">
+                  {prediction.nextPeriodDate.toLocaleDateString()}
+                </div>
+                <div className="text-sm text-text-secondary mb-4">
+                  {Math.round(prediction.confidence * 100)}% confidence
+                </div>
+                <div className="text-xs text-text-muted">
+                  Based on your cycle history
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
       </div>
 
       {/* Log Entry Modal */}

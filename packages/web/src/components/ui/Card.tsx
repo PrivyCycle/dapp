@@ -13,8 +13,8 @@ export const Card: React.FC<CardProps> = ({
   hover = false,
   padding = 'md'
 }) => {
-  const baseClasses = 'bg-bg-secondary border border-border-primary rounded-xl shadow-lg';
-  const hoverClasses = hover ? 'hover:shadow-glow hover:border-accent-primary/30 transition-all duration-300' : '';
+  const baseClasses = 'bg-bg-secondary border border-border-primary rounded-xl shadow-sm';
+  const hoverClasses = hover ? 'hover:shadow-md hover:border-border-accent transition-all duration-300' : '';
   
   const paddingClasses = {
     sm: 'p-4',
