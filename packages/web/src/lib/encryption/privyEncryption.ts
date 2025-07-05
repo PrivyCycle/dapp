@@ -33,19 +33,50 @@ class PrivyEncryptionService {
     
     console.log('🔑 Generating wallet signature for user:', userId);
     
-    try {
-      const result = await signMessage({ message });
-      console.log('✅ Wallet signature generated');
-      
-      // Cache the signature for this session
-      this.cachedSignature = result.signature;
-      this.cachedUserId = userId;
-      
-      return result.signature;
-    } catch (error) {
-      console.error('❌ Failed to generate wallet signature:', error);
-      throw new Error(`Failed to generate wallet signature: ${error}`);
+    // Retry logic for wallet signature generation
+    const maxRetries = 3;
+    let lastError: Error | unknown;
+    
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        console.log(`🔑 Signature attempt ${attempt}/${maxRetries}`);
+        
+        // Add a small delay between retries
+        if (attempt > 1) {
+          await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
+        }
+        
+        const result = await signMessage({ message });
+        console.log('✅ Wallet signature generated');
+        
+        // Cache the signature for this session
+        this.cachedSignature = result.signature;
+        this.cachedUserId = userId;
+        
+        return result.signature;
+      } catch (error) {
+        lastError = error;
+        console.warn(`❌ Signature attempt ${attempt} failed:`, error);
+        
+        // Check if this is a wallet connectivity issue
+        if (error instanceof Error && 
+            (error.message.includes('Unable to connect to wallet') || 
+             error.message.includes('provider_error') ||
+             error.message.includes('Wallet did not respond'))) {
+          
+          if (attempt < maxRetries) {
+            console.log(`🔄 Retrying signature generation (${attempt + 1}/${maxRetries})...`);
+            continue;
+          }
+        } else {
+          // For other errors, don't retry
+          break;
+        }
+      }
     }
+    
+    console.error('❌ Failed to generate wallet signature after all retries:', lastError);
+    throw new Error(`Failed to generate wallet signature after ${maxRetries} attempts: ${lastError}`);
   }
 
   /**

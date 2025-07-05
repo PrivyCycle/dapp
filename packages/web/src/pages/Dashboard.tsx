@@ -6,6 +6,8 @@ import { useEncryptedLogEntries } from '../hooks/data/useEncryptedLogEntries';
 import { usePrivy } from '@privy-io/react-auth';
 import { encryptedIndexedDbService } from '../lib/storage/encryptedIndexedDBService';
 import { LogEntryModal } from '../components/logging/LogEntryModal';
+import { LogEntryWizard } from '../components/logging/LogEntryWizard';
+import { AllEntriesModal } from '../components/logging/AllEntriesModal';
 import { type LogEntry } from '../lib/types/cycle';
 
 export const Dashboard: React.FC = () => {
@@ -19,10 +21,12 @@ export const Dashboard: React.FC = () => {
     clearStorageAndRetry
   } = useEncryptedLogEntries();
   const { user, authenticated, ready, signMessage } = usePrivy();
-  
+
   // Modal state
   const [selectedEntry, setSelectedEntry] = useState<LogEntry | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isWizardOpen, setIsWizardOpen] = useState(false);
+  const [isAllEntriesOpen, setIsAllEntriesOpen] = useState(false);
 
   // Handle log entry click
   const handleLogEntryClick = (entry: LogEntry) => {
@@ -65,8 +69,6 @@ export const Dashboard: React.FC = () => {
     }
   };
 
-
-
   // Show loading while Privy is initializing
   if (!ready) {
     return (
@@ -79,8 +81,8 @@ export const Dashboard: React.FC = () => {
     );
   }
 
-  // Show initialization screen when authenticated but data not initialized
-  if (authenticated && !isInitialized && !entriesLoading) {
+  // Show initialization screen when authenticated but data not initialized and not currently loading
+  if (authenticated && ready && !isInitialized && !entriesLoading) {
     return (
       <div className="min-h-screen bg-bg-primary">
         {/* Header */}
@@ -196,7 +198,11 @@ export const Dashboard: React.FC = () => {
               <Button variant="ghost" size="sm" onClick={clearStorageAndRetry}>
                 Clear Data
               </Button>
-              <Button variant="primary" size="sm">
+              <Button 
+                variant="primary" 
+                size="sm"
+                onClick={() => setIsWizardOpen(true)}
+              >
                 Log Entry
               </Button>
             </div>
@@ -219,7 +225,12 @@ export const Dashboard: React.FC = () => {
                   <div className="text-center text-text-secondary py-8">
                     <div className="text-2xl mb-2">No cycle data available</div>
                     <div className="mb-4">Start by logging your period to see your cycle here.</div>
-                    <Button variant="primary">Log Period</Button>
+                    <Button 
+                      variant="primary"
+                      onClick={() => setIsWizardOpen(true)}
+                    >
+                      Log Period
+                    </Button>
                   </div>
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -251,7 +262,13 @@ export const Dashboard: React.FC = () => {
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <CardTitle>Recent Entries</CardTitle>
-                  <Button variant="ghost" size="sm">View All</Button>
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    onClick={() => setIsAllEntriesOpen(true)}
+                  >
+                    View All
+                  </Button>
                 </div>
               </CardHeader>
               <CardContent>
@@ -300,10 +317,18 @@ export const Dashboard: React.FC = () => {
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  <Button variant="primary" className="w-full">
+                  <Button 
+                    variant="primary" 
+                    className="w-full"
+                    onClick={() => setIsWizardOpen(true)}
+                  >
                     Period Started
                   </Button>
-                  <Button variant="secondary" className="w-full">
+                  <Button 
+                    variant="secondary" 
+                    className="w-full"
+                    onClick={() => setIsWizardOpen(true)}
+                  >
                     Log Symptoms
                   </Button>
                   <Button variant="ghost" className="w-full">
@@ -378,6 +403,20 @@ export const Dashboard: React.FC = () => {
         isOpen={isModalOpen}
         onClose={closeModal}
         entry={selectedEntry}
+      />
+
+      {/* Log Entry Wizard */}
+      <LogEntryWizard
+        isOpen={isWizardOpen}
+        onClose={() => setIsWizardOpen(false)}
+      />
+
+      {/* All Entries Modal */}
+      <AllEntriesModal
+        isOpen={isAllEntriesOpen}
+        onClose={() => setIsAllEntriesOpen(false)}
+        entries={entries}
+        onEntryClick={handleLogEntryClick}
       />
     </div>
   );

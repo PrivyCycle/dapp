@@ -31,14 +31,18 @@ export const useEncryptedLogEntries = (): {
 
   // Check if user has already initialized data by trying to load existing entries
   const checkIfInitialized = async (): Promise<void> => {
-    if (!ready || !authenticated || !user?.id || !signMessage || initCheckRef.current) {
+    if (!ready || !authenticated || !user?.id || !signMessage || initCheckRef.current || isInitialized) {
       return;
     }
 
     initCheckRef.current = true;
+    setIsLoading(true); // Set loading state
     
     try {
       console.log('🔍 Checking if data is already initialized...');
+      
+      // Add a small delay to ensure wallet is fully ready
+      await new Promise(resolve => setTimeout(resolve, 500));
       
       const adaptedSignMessage = async (message: { message: string }): Promise<{ signature: string }> => {
         return await signMessage(message);
@@ -46,25 +50,24 @@ export const useEncryptedLogEntries = (): {
 
       const savedEntries = await encryptedIndexedDbService.getLogEntries(user.id, adaptedSignMessage);
       
-      if (savedEntries.length >= 0) { // Even 0 entries means initialized
-        console.log('✅ Data already initialized, loaded', savedEntries.length, 'entries');
-        // Only set entries if we don't already have entries loaded
-        // This prevents overwriting newly added entries
-        setEntries(prevEntries => {
-          if (prevEntries.length === 0) {
-            return savedEntries;
-          }
-          // If we already have entries, don't overwrite them
-          // This handles the case where user navigates between pages
-          console.log('ℹ️ Entries already loaded in state, keeping existing state');
-          return prevEntries;
-        });
-        setIsInitialized(true);
-      }
-    } catch {
+      console.log('✅ Data already initialized, loaded', savedEntries.length, 'entries');
+      setEntries(savedEntries);
+      setIsInitialized(true);
+      setError(null);
+      
+    } catch (error) {
       console.log('ℹ️ No existing data found or unable to decrypt, initialization required');
+      console.log('Debug - Error details:', error);
       // This is expected for new users or if there's no data yet
+      // Also handles the case where wallet isn't ready yet
       setIsInitialized(false);
+      
+      // Only set error for unexpected errors, not for "no data" scenarios
+      if (error instanceof Error && !error.message.includes('No records found')) {
+        setError('Unable to load existing data. Please try manual initialization.');
+      }
+    } finally {
+      setIsLoading(false); // Always clear loading state
     }
   };
 
@@ -124,19 +127,32 @@ export const useEncryptedLogEntries = (): {
   };
 
   // Check initialization status when user is authenticated
-  // Remove signMessage from dependencies to prevent re-runs
   useEffect(() => {
-    if (authenticated && ready && user?.id && typeof signMessage === 'function') {
-      checkIfInitialized();
+    let timeoutId: NodeJS.Timeout;
+    
+    if (authenticated && ready && user?.id && typeof signMessage === 'function' && !isInitialized && !initCheckRef.current) {
+      console.log('🔄 Setting up initialization check...');
+      // Add a delay to ensure everything is properly loaded
+      timeoutId = setTimeout(() => {
+        checkIfInitialized();
+      }, 1500); // 1.5 second delay
     } else if (!authenticated) {
       // Clear state when user logs out
+      console.log('🔄 User logged out, clearing state...');
       setEntries([]);
       setIsInitialized(false);
       setError(null);
+      setIsLoading(false);
       initCheckRef.current = false;
     }
+    
+    return () => {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [authenticated, ready, user?.id]); // Removed signMessage to prevent unnecessary re-runs
+  }, [authenticated, ready, user?.id, isInitialized]); // Added isInitialized to prevent re-runs after success
 
   const addEntry = async (entry: Omit<LogEntry, 'id'>): Promise<void> => {
     if (!ready || !authenticated || !user?.id || !signMessage) {

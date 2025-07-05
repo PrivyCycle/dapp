@@ -1,7 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
 import { Dashboard } from './pages/Dashboard';
-import { LogEntry } from './pages/LogEntry';
+
 import { Partner } from './pages/Partner';
 import { Family } from './pages/Family';
 import { Doctor } from './pages/Doctor';
@@ -14,7 +14,6 @@ const Navigation: React.FC = () => {
   
   const navItems = [
     { path: '/', label: 'Dashboard', icon: '📊' },
-    { path: '/log', label: 'Log Entry', icon: '📝' },
     { path: '/partner', label: 'Partner', icon: '💕' },
     { path: '/family', label: 'Family', icon: '👨‍👩‍👧‍👦' },
     { path: '/doctor', label: 'Doctor', icon: '🏥' },
@@ -114,7 +113,7 @@ function App(): React.ReactElement {
           <Navigation />
           <Routes>
             <Route path="/" element={<Dashboard />} />
-            <Route path="/log" element={<LogEntry />} />
+
             <Route path="/partner" element={<Partner />} />
             <Route path="/family" element={<Family />} />
             <Route path="/doctor" element={<Doctor />} />
