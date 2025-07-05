@@ -19,6 +19,19 @@ class PrivyEncryptionService {
   private cachedUserId: string | null = null;
 
   /**
+   * Check if wallet is ready for signing operations
+   */
+  private async isWalletReady(): Promise<boolean> {
+    try {
+      // Add a small delay to ensure wallet is fully initialized
+      await new Promise(resolve => setTimeout(resolve, 100));
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  /**
    * Generate a deterministic signature using Privy wallet
    */
   private async generateWalletSignature(userId: string, signMessage: (message: { message: string }) => Promise<{ signature: string }>): Promise<string> {
@@ -26,6 +39,12 @@ class PrivyEncryptionService {
     if (this.cachedSignature && this.cachedUserId === userId) {
       console.log('🔑 Using cached wallet signature for user:', userId);
       return this.cachedSignature;
+    }
+
+    // Ensure wallet is ready before attempting signature
+    const walletReady = await this.isWalletReady();
+    if (!walletReady) {
+      throw new Error('Wallet not ready for signing operations. Please wait a moment and try again.');
     }
 
     // Create a deterministic message based on user ID and app context
@@ -41,13 +60,15 @@ class PrivyEncryptionService {
       try {
         console.log(`🔑 Signature attempt ${attempt}/${maxRetries}`);
         
-        // Add a small delay between retries
+        // Add progressive delay between retries
         if (attempt > 1) {
-          await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
+          const delay = Math.min(1000 * Math.pow(2, attempt - 1), 5000); // Exponential backoff, max 5s
+          console.log(`⏳ Waiting ${delay}ms before retry...`);
+          await new Promise(resolve => setTimeout(resolve, delay));
         }
         
         const result = await signMessage({ message });
-        console.log('✅ Wallet signature generated');
+        console.log('✅ Wallet signature generated successfully');
         
         // Cache the signature for this session
         this.cachedSignature = result.signature;
@@ -58,25 +79,43 @@ class PrivyEncryptionService {
         lastError = error;
         console.warn(`❌ Signature attempt ${attempt} failed:`, error);
         
-        // Check if this is a wallet connectivity issue
-        if (error instanceof Error && 
-            (error.message.includes('Unable to connect to wallet') || 
-             error.message.includes('provider_error') ||
-             error.message.includes('Wallet did not respond'))) {
+        // Check if this is a wallet connectivity issue that might resolve with retry
+        if (error instanceof Error) {
+          const isRetryableError = 
+            error.message.includes('Unable to connect to wallet') || 
+            error.message.includes('provider_error') ||
+            error.message.includes('Wallet did not respond') ||
+            error.message.includes('User rejected') ||
+            error.message.includes('timeout');
           
-          if (attempt < maxRetries) {
+          if (isRetryableError && attempt < maxRetries) {
             console.log(`🔄 Retrying signature generation (${attempt + 1}/${maxRetries})...`);
             continue;
+          } else if (error.message.includes('User rejected') || error.message.includes('denied')) {
+            // User explicitly rejected, don't retry
+            throw new Error('Signature request was rejected. Encryption requires wallet signature to secure your data.');
           }
-        } else {
-          // For other errors, don't retry
+        }
+        
+        // For non-retryable errors or final attempt, break
+        if (attempt === maxRetries) {
           break;
         }
       }
     }
     
     console.error('❌ Failed to generate wallet signature after all retries:', lastError);
-    throw new Error(`Failed to generate wallet signature after ${maxRetries} attempts: ${lastError}`);
+    
+    // Provide more helpful error messages based on the error type
+    if (lastError instanceof Error) {
+      if (lastError.message.includes('Unable to connect')) {
+        throw new Error('Unable to connect to wallet. Please ensure your wallet is unlocked and try again.');
+      } else if (lastError.message.includes('timeout')) {
+        throw new Error('Wallet signature request timed out. Please try again.');
+      }
+    }
+    
+    throw new Error(`Failed to generate wallet signature: ${lastError}`);
   }
 
   /**
@@ -262,4 +301,4 @@ export const usePrivyEncryption = () => {
 };
 
 // Export the service class for direct use if needed
-export { PrivyEncryptionService }; 
+export { PrivyEncryptionService };
