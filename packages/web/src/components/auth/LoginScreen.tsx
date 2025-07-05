@@ -1,16 +1,9 @@
 import React from 'react';
-import { useLogin } from '@privy-io/react-auth';
+import { useAuth } from '../../hooks/auth/useAuth';
 import { Logo } from './Logo';
 
 export const LoginScreen: React.FC = () => {
-  const { login } = useLogin({
-    onComplete: (params) => {
-      console.log('Login completed:', params);
-    },
-    onError: (error) => {
-      console.error('Login error:', error);
-    }
-  });
+  const { login, loginWithWallet } = useAuth();
 
   return (
     <div className="auth-container">
@@ -44,6 +37,26 @@ export const LoginScreen: React.FC = () => {
               />
             </svg>
             Continue with Email
+          </button>
+
+          <button
+            onClick={() => loginWithWallet()}
+            className="btn-primary w-full flex items-center justify-center bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+          >
+            <svg
+              className="w-5 h-5 mr-2"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"
+              />
+            </svg>
+            Connect Wallet
           </button>
 
           <div className="relative">

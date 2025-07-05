@@ -13,6 +13,10 @@ export interface AuthState {
   isAuthenticated: boolean;
   isLoading: boolean;
   login: () => void;
+  loginWithWallet: (options?: {
+    walletChainType?: 'ethereum-only' | 'solana-only' | 'ethereum-and-solana';
+    disableSignup?: boolean;
+  }) => void;
   logout: () => Promise<void>;
 }
 
@@ -29,11 +33,23 @@ export const useAuth = (): AuthState => {
     } : undefined
   } : null;
 
+  const loginWithWallet = (options?: {
+    walletChainType?: 'ethereum-only' | 'solana-only' | 'ethereum-and-solana';
+    disableSignup?: boolean;
+  }) => {
+    login({
+      loginMethods: ['wallet'],
+      walletChainType: options?.walletChainType || 'ethereum-and-solana',
+      disableSignup: options?.disableSignup || false
+    });
+  };
+
   return {
     user: transformedUser,
     isAuthenticated: authenticated,
     isLoading: !ready,
     login,
+    loginWithWallet,
     logout
   };
 };
