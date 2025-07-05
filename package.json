@@ -1,34 +1,25 @@
 {
-  "name": "privycycle",
+  "name": "consentcycle",
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "workspaces": [
+    "packages/*"
+  ],
   "scripts": {
-    "dev": "vite",
-    "build": "tsc -b && vite build",
-    "lint": "eslint .",
-    "preview": "vite preview"
-  },
-  "dependencies": {
-    "@privy-io/react-auth": "^2.17.3",
-    "autoprefixer": "^10.4.16",
-    "postcss": "^8.4.32",
-    "react": "^19.1.0",
-    "react-dom": "^19.1.0",
-    "react-router-dom": "^6.20.1",
-    "tailwindcss": "^3.4.1"
+    "dev": "npm run dev --workspace=@consentcycle/web",
+    "build": "npm run build --workspace=@consentcycle/web",
+    "lint": "npm run lint --workspace=@consentcycle/web",
+    "preview": "npm run preview --workspace=@consentcycle/web",
+    "dev:web": "npm run dev --workspace=@consentcycle/web",
+    "build:web": "npm run build --workspace=@consentcycle/web",
+    "lint:web": "npm run lint --workspace=@consentcycle/web",
+    "preview:web": "npm run preview --workspace=@consentcycle/web",
+    "build:contracts": "npm run build --workspace=@consentcycle/contracts",
+    "test:contracts": "npm run test --workspace=@consentcycle/contracts",
+    "clean:contracts": "npm run clean --workspace=@consentcycle/contracts"
   },
   "devDependencies": {
-    "@eslint/js": "^9.29.0",
-    "@types/react": "^19.1.8",
-    "@types/react-dom": "^19.1.6",
-    "@vitejs/plugin-react": "^4.5.2",
-    "eslint": "^9.29.0",
-    "eslint-plugin-react-hooks": "^5.2.0",
-    "eslint-plugin-react-refresh": "^0.4.20",
-    "globals": "^16.2.0",
-    "typescript": "~5.8.3",
-    "typescript-eslint": "^8.34.1",
-    "vite": "^7.0.0"
+    "typescript": "~5.8.3"
   }
-}
+} 

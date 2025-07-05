@@ -1,0 +1,14 @@
+{
+  "name": "@consentcycle/contracts",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "build": "forge build",
+    "test": "forge test",
+    "deploy": "forge script script/Deploy.s.sol",
+    "clean": "forge clean",
+    "fmt": "forge fmt",
+    "gas": "forge test --gas-report",
+    "coverage": "forge coverage"
+  }
+} 
