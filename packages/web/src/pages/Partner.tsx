@@ -5,7 +5,8 @@ import { usePartnerTips, getTipPriorityColor, getTipCategoryIcon, getPhaseDescri
 
 export const Partner: React.FC = () => {
   const { currentCycle, prediction, isLoading: cycleLoading } = useCycleData();
-  const { currentPhaseTips, isLoading: tipsLoading } = usePartnerTips(currentCycle.phase);
+  const phase = currentCycle ? currentCycle.phase : undefined;
+  const { currentPhaseTips, isLoading: tipsLoading } = usePartnerTips(phase || 'menstrual');
 
   if (cycleLoading || tipsLoading) {
     return (
@@ -18,8 +19,19 @@ export const Partner: React.FC = () => {
     );
   }
 
+  if (!currentCycle) {
+    return (
+      <div className="min-h-screen bg-bg-primary flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-2xl mb-2 text-text-secondary">No cycle data available</div>
+          <div className="mb-4 text-text-secondary">Ask your partner to log their period to see cycle information here.</div>
+        </div>
+      </div>
+    );
+  }
+
   const phaseInfo = getCyclePhaseInfo(currentCycle.phase);
-  const daysUntilPeriod = getDaysUntilNextPeriod(prediction);
+  const daysUntilPeriod = prediction ? getDaysUntilNextPeriod(prediction) : '-';
   const phaseDescription = getPhaseDescription(currentCycle.phase);
 
   return (

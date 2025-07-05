@@ -19,8 +19,12 @@ export const Dashboard: React.FC = () => {
     );
   }
 
-  const phaseInfo = getCyclePhaseInfo(currentCycle.phase);
-  const daysUntilPeriod = getDaysUntilNextPeriod(prediction);
+  // Placeholder for missing cycle data
+  const showCyclePlaceholder = !currentCycle;
+  const showPredictionPlaceholder = !prediction;
+
+  const phaseInfo = currentCycle ? getCyclePhaseInfo(currentCycle.phase) : { name: 'No Data', description: 'No cycle data available. Please log your period to get started.', color: 'text-text-muted' };
+  const daysUntilPeriod = prediction ? getDaysUntilNextPeriod(prediction) : '-';
   const recentEntries = entries.slice(0, 3);
 
   return (
@@ -51,26 +55,34 @@ export const Dashboard: React.FC = () => {
                 <CardTitle>Current Cycle</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <div className="text-center">
-                    <div className="text-3xl font-bold text-accent-primary mb-2">
-                      Day {currentCycle.dayOfCycle}
-                    </div>
-                    <p className="text-text-secondary">of {currentCycle.cycleLength}</p>
+                {showCyclePlaceholder ? (
+                  <div className="text-center text-text-secondary py-8">
+                    <div className="text-2xl mb-2">No cycle data available</div>
+                    <div className="mb-4">Start by logging your period to see your cycle here.</div>
+                    <Button variant="primary">Log Period</Button>
                   </div>
-                  <div className="text-center">
-                    <div className={`text-xl font-semibold mb-2 ${phaseInfo.color}`}>
-                      {phaseInfo.name}
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div className="text-center">
+                      <div className="text-3xl font-bold text-accent-primary mb-2">
+                        Day {currentCycle.dayOfCycle}
+                      </div>
+                      <p className="text-text-secondary">of {currentCycle.cycleLength}</p>
                     </div>
-                    <p className="text-text-secondary text-sm">{phaseInfo.description}</p>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-3xl font-bold text-text-primary mb-2">
-                      {daysUntilPeriod}
+                    <div className="text-center">
+                      <div className={`text-xl font-semibold mb-2 ${phaseInfo.color}`}>
+                        {phaseInfo.name}
+                      </div>
+                      <p className="text-text-secondary text-sm">{phaseInfo.description}</p>
                     </div>
-                    <p className="text-text-secondary">days until next period</p>
+                    <div className="text-center">
+                      <div className="text-3xl font-bold text-text-primary mb-2">
+                        {daysUntilPeriod}
+                      </div>
+                      <p className="text-text-secondary">days until next period</p>
+                    </div>
                   </div>
-                </div>
+                )}
               </CardContent>
             </Card>
 
@@ -84,25 +96,29 @@ export const Dashboard: React.FC = () => {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {recentEntries.map((entry) => (
-                    <div key={entry.id} className="flex items-center justify-between p-4 bg-bg-tertiary rounded-lg">
-                      <div>
-                        <div className="font-medium text-text-primary">
-                          {entry.date.toLocaleDateString()}
+                  {recentEntries.length === 0 ? (
+                    <div className="text-center text-text-secondary py-4">No entries yet. Start logging your symptoms and moods!</div>
+                  ) : (
+                    recentEntries.map((entry) => (
+                      <div key={entry.id} className="flex items-center justify-between p-4 bg-bg-tertiary rounded-lg">
+                        <div>
+                          <div className="font-medium text-text-primary">
+                            {entry.date.toLocaleDateString()}
+                          </div>
+                          <div className="text-sm text-text-secondary">
+                            {entry.flow && `Flow: ${entry.flow}`}
+                            {entry.mood && ` • Mood: ${entry.mood}`}
+                            {entry.symptoms.length > 0 && ` • ${entry.symptoms.length} symptoms`}
+                          </div>
                         </div>
-                        <div className="text-sm text-text-secondary">
-                          {entry.flow && `Flow: ${entry.flow}`}
-                          {entry.mood && ` • Mood: ${entry.mood}`}
-                          {entry.symptoms.length > 0 && ` • ${entry.symptoms.length} symptoms`}
+                        <div className="text-right">
+                          <div className="text-sm text-text-muted">
+                            Energy: {entry.energyLevel}/5
+                          </div>
                         </div>
                       </div>
-                      <div className="text-right">
-                        <div className="text-sm text-text-muted">
-                          Energy: {entry.energyLevel}/5
-                        </div>
-                      </div>
-                    </div>
-                  ))}
+                    ))
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -164,20 +180,27 @@ export const Dashboard: React.FC = () => {
                 <CardTitle>Prediction</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-center">
-                  <div className="text-lg font-semibold text-text-primary mb-2">
-                    Next Period
+                {showPredictionPlaceholder ? (
+                  <div className="text-center text-text-secondary py-8">
+                    <div className="text-lg mb-2">No prediction available</div>
+                    <div className="mb-4">Log more cycle data to see period predictions here.</div>
                   </div>
-                  <div className="text-2xl font-bold text-accent-primary mb-1">
-                    {prediction.nextPeriodDate.toLocaleDateString()}
+                ) : (
+                  <div className="text-center">
+                    <div className="text-lg font-semibold text-text-primary mb-2">
+                      Next Period
+                    </div>
+                    <div className="text-2xl font-bold text-accent-primary mb-1">
+                      {prediction.nextPeriodDate.toLocaleDateString()}
+                    </div>
+                    <div className="text-sm text-text-secondary mb-4">
+                      {Math.round(prediction.confidence * 100)}% confidence
+                    </div>
+                    <div className="text-xs text-text-muted">
+                      Based on your cycle history
+                    </div>
                   </div>
-                  <div className="text-sm text-text-secondary mb-4">
-                    {Math.round(prediction.confidence * 100)}% confidence
-                  </div>
-                  <div className="text-xs text-text-muted">
-                    Based on your cycle history
-                  </div>
-                </div>
+                )}
               </CardContent>
             </Card>
           </div>

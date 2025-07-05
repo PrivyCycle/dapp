@@ -1,37 +1,16 @@
 import { useState, useEffect } from 'react';
 import type { CycleData, CyclePhase, Prediction } from '../../lib/types/cycle';
 
-// Mock data for demonstration
-const mockCycleData: CycleData = {
-  id: '1',
-  userId: 'user1',
-  startDate: new Date(2025, 2, 5), // March 5, 2025
-  cycleLength: 28,
-  periodLength: 5,
-  phase: 'ovulation',
-  dayOfCycle: 14
-};
-
-const mockPrediction: Prediction = {
-  nextPeriodDate: new Date(2025, 3, 2), // April 2, 2025
-  ovulationDate: new Date(2025, 2, 19), // March 19, 2025
-  fertileWindow: {
-    start: new Date(2025, 2, 17), // March 17, 2025
-    end: new Date(2025, 2, 21)   // March 21, 2025
-  },
-  confidence: 0.85
-};
-
 export const useCycleData = (): {
-  currentCycle: CycleData;
-  prediction: Prediction;
+  currentCycle: CycleData | null;
+  prediction: Prediction | null;
   isLoading: boolean;
   error: string | null;
 } => {
-  const [currentCycle, _setCurrentCycle] = useState<CycleData>(mockCycleData);
-  const [prediction, _setPrediction] = useState<Prediction>(mockPrediction);
+  const [currentCycle] = useState<CycleData | null>(null);
+  const [prediction] = useState<Prediction | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, _setError] = useState<string | null>(null);
+  const [error] = useState<string | null>(null);
 
   useEffect(() => {
     // Simulate loading
@@ -50,11 +29,19 @@ export const useCycleData = (): {
   };
 };
 
-export const getCyclePhaseInfo = (phase: CyclePhase): {
+export const getCyclePhaseInfo = (phase?: CyclePhase): {
   name: string;
   description: string;
   color: string;
 } => {
+  if (!phase) {
+    return {
+      name: 'Unknown',
+      description: 'No cycle data available',
+      color: 'text-text-muted'
+    };
+  }
+
   const phaseInfo = {
     menstrual: {
       name: 'Menstrual',
@@ -81,7 +68,8 @@ export const getCyclePhaseInfo = (phase: CyclePhase): {
   return phaseInfo[phase];
 };
 
-export const getDaysUntilNextPeriod = (prediction: Prediction): number => {
+export const getDaysUntilNextPeriod = (prediction: Prediction | null): number => {
+  if (!prediction) return 0;
   const today = new Date();
   const nextPeriod = prediction.nextPeriodDate;
   const diffTime = nextPeriod.getTime() - today.getTime();
