@@ -7,7 +7,7 @@ import App from './App.tsx'
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <PrivyProvider
-      appId={import.meta.env.VITE_PRIVY_APP_ID || 'your-privy-app-id'}
+      appId={import.meta.env.VITE_PRIVY_APP_ID}
       config={{
         loginMethods: ['email', 'google', 'twitter'],
         appearance: {
