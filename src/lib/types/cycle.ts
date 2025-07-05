@@ -45,6 +45,8 @@ export interface CycleInsight {
   confidence: number; // 0-1
   date: Date;
 }
+// make sure that the predictions are multi-facet
+
 
 export interface Prediction {
   nextPeriodDate: Date;
@@ -55,3 +57,5 @@ export interface Prediction {
   };
   confidence: number;
 }
+
+
