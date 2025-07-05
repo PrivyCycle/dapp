@@ -1,0 +1,73 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+  
+  html {
+    font-family: 'Inter', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  
+  body {
+    margin: 0;
+    padding: 0;
+    background-color: #0f172a;
+    color: #f8fafc;
+    min-height: 100vh;
+    line-height: 1.5;
+  }
+  
+  #root {
+    min-height: 100vh;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-accent-primary hover:bg-accent-primary/90 text-white font-medium py-3 px-6 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-accent-primary/50;
+  }
+  
+  .btn-secondary {
+    @apply bg-bg-tertiary hover:bg-bg-tertiary/80 text-text-primary font-medium py-3 px-6 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-border-secondary;
+  }
+  
+  .card {
+    @apply bg-bg-secondary border border-border-primary rounded-xl p-6 shadow-lg;
+  }
+  
+  .input-field {
+    @apply bg-bg-tertiary border border-border-primary text-text-primary placeholder-text-muted rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-accent-primary/50 focus:border-accent-primary transition-colors duration-200;
+  }
+  
+  .nav-link {
+    @apply text-text-secondary hover:text-text-primary transition-colors duration-200 font-medium;
+  }
+  
+  .nav-link-active {
+    @apply text-accent-primary;
+  }
+}
+
+@layer utilities {
+  .text-gradient {
+    background: linear-gradient(135deg, #06b6d4, #8b5cf6);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  
+  .glass-effect {
+    backdrop-filter: blur(10px);
+    background: rgba(30, 41, 59, 0.8);
+  }
+  
+  .shadow-glow {
+    box-shadow: 0 0 20px rgba(6, 182, 212, 0.3);
+  }
+}
