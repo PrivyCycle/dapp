@@ -12,6 +12,7 @@ export const useEncryptedLogEntries = (): {
   error: string | null;
   isInitialized: boolean;
   initializeData: () => Promise<void>;
+  refreshData: () => Promise<void>;
   clearCache: () => void;
   clearStorageAndRetry: () => Promise<void>;
 } => {
@@ -261,6 +262,35 @@ export const useEncryptedLogEntries = (): {
     }
   };
 
+  // Refresh function to reload data (similar to initializeData but without guards)
+  const refreshData = async (): Promise<void> => {
+    if (!ready || !authenticated || !user?.id || !signMessage) {
+      console.warn('Cannot refresh data: user not ready');
+      return;
+    }
+
+    try {
+      console.log('🔄 Refreshing encrypted entries for user:', user.id);
+      setIsLoading(true);
+      
+      const adaptedSignMessage = async (message: { message: string }): Promise<{ signature: string }> => {
+        return await signMessage(message);
+      };
+      
+      const savedEntries = await encryptedIndexedDbService.getLogEntries(user.id, adaptedSignMessage);
+      console.log('✅ Successfully refreshed', savedEntries.length, 'entries');
+      setEntries(savedEntries);
+      setError(null);
+    } catch (err) {
+      console.error('❌ Error refreshing data:', err);
+      if (err instanceof Error) {
+        setError('Failed to refresh data: ' + err.message);
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return {
     entries,
     addEntry,
@@ -270,6 +300,7 @@ export const useEncryptedLogEntries = (): {
     error,
     isInitialized,
     initializeData,
+    refreshData,
     clearCache,
     clearStorageAndRetry
   };

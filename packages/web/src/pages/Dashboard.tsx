@@ -18,6 +18,7 @@ export const Dashboard: React.FC = () => {
     error: entriesError,
     isInitialized,
     initializeData,
+    refreshData,
     clearStorageAndRetry
   } = useEncryptedLogEntries();
   const { user, authenticated, ready, signMessage } = usePrivy();
@@ -38,6 +39,17 @@ export const Dashboard: React.FC = () => {
   const closeModal = () => {
     setIsModalOpen(false);
     setSelectedEntry(null);
+  };
+
+  // Refresh entries data when new entry is added
+  const handleEntryAdded = async () => {
+    console.log('🔄 New entry added, refreshing dashboard...');
+    try {
+      await refreshData();
+      console.log('✅ Dashboard refreshed successfully');
+    } catch (error) {
+      console.error('❌ Failed to refresh dashboard:', error);
+    }
   };
 
   // Debug function to check what's in IndexedDB
@@ -409,6 +421,7 @@ export const Dashboard: React.FC = () => {
       <LogEntryWizard
         isOpen={isWizardOpen}
         onClose={() => setIsWizardOpen(false)}
+        onEntryAdded={handleEntryAdded}
       />
 
       {/* All Entries Modal */}

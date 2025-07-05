@@ -11,11 +11,12 @@ import type { FlowIntensity, Symptom, Mood } from '../../lib/types/cycle';
 interface LogEntryWizardProps {
   isOpen: boolean;
   onClose: () => void;
+  onEntryAdded?: () => void;
 }
 
 type WizardStep = 'date' | 'flow' | 'symptoms' | 'mood-energy' | 'notes' | 'review';
 
-export const LogEntryWizard: React.FC<LogEntryWizardProps> = ({ isOpen, onClose }) => {
+export const LogEntryWizard: React.FC<LogEntryWizardProps> = ({ isOpen, onClose, onEntryAdded }) => {
   const { addEntry } = useEncryptedLogEntries();
   const [currentStep, setCurrentStep] = useState<WizardStep>('date');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -107,6 +108,9 @@ export const LogEntryWizard: React.FC<LogEntryWizardProps> = ({ isOpen, onClose 
 
       resetForm();
       onClose();
+      if (onEntryAdded) {
+        onEntryAdded();
+      }
     } catch (error) {
       console.error('Error logging entry:', error);
       alert('Error logging entry. Please try again.');
