@@ -1,4 +1,5 @@
 import { usePrivy, useLogin, useLogout } from '@privy-io/react-auth';
+import { encryptedIndexedDbService } from '../../lib/storage/encryptedIndexedDBService';
 
 export interface User {
   id: string;
@@ -23,7 +24,13 @@ export interface AuthState {
 export const useAuth = (): AuthState => {
   const { user, authenticated, ready } = usePrivy();
   const { login } = useLogin();
-  const { logout } = useLogout();
+  const { logout: privyLogout } = useLogout();
+  
+  const logout = async (): Promise<void> => {
+    // Clear encryption cache before logging out
+    encryptedIndexedDbService.clearEncryptionCache();
+    await privyLogout();
+  };
 
   const transformedUser: User | null = user ? {
     id: user.id,

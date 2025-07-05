@@ -4,10 +4,13 @@ import { PrivyProvider } from '@privy-io/react-auth'
 import './index.css'
 import App from './App.tsx'
 
+// Development fallback for Privy app ID
+const PRIVY_APP_ID = import.meta.env.VITE_PRIVY_APP_ID || 'clpispdty00ycl80fpueukbhl';
+
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <PrivyProvider
-      appId={import.meta.env.VITE_PRIVY_APP_ID}
+      appId={PRIVY_APP_ID}
       config={{
         loginMethods: ['email', 'google', 'twitter'],
         appearance: {

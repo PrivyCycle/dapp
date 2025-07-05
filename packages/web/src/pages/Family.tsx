@@ -1,12 +1,30 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { useCycleData, getCyclePhaseInfo, getDaysUntilNextPeriod } from '../hooks/data/useCycleData';
-import { useLogEntries } from '../hooks/data/useLogEntries';
+import { useEncryptedLogEntries } from '../hooks/data/useEncryptedLogEntries';
+import { LogEntryModal } from '../components/logging/LogEntryModal';
+import { type LogEntry } from '../lib/types/cycle';
 
 export const Family: React.FC = () => {
   const { currentCycle, prediction, isLoading: cycleLoading } = useCycleData();
-  const { entries, isLoading: entriesLoading } = useLogEntries();
+  const { entries, isLoading: entriesLoading } = useEncryptedLogEntries();
+  
+  // Modal state
+  const [selectedEntry, setSelectedEntry] = useState<LogEntry | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // Handle log entry click
+  const handleLogEntryClick = (entry: LogEntry) => {
+    setSelectedEntry(entry);
+    setIsModalOpen(true);
+  };
+
+  // Close modal
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setSelectedEntry(null);
+  };
 
   if (cycleLoading || entriesLoading) {
     return (
@@ -19,8 +37,12 @@ export const Family: React.FC = () => {
     );
   }
 
-  const phaseInfo = getCyclePhaseInfo(currentCycle.phase);
-  const daysUntilPeriod = getDaysUntilNextPeriod(prediction);
+  const phaseInfo = currentCycle ? getCyclePhaseInfo(currentCycle.phase) : {
+    name: 'No Data',
+    description: 'No cycle data available.',
+    color: 'text-text-muted'
+  };
+  const daysUntilPeriod = prediction ? getDaysUntilNextPeriod(prediction) : '-';
   const recentEntries = entries.slice(0, 5);
 
   return (
@@ -71,7 +93,7 @@ export const Family: React.FC = () => {
                   </div>
                   <div className="text-center">
                     <div className="text-2xl font-bold text-accent-primary mb-2">
-                      Day {currentCycle.dayOfCycle}
+                      Day {currentCycle?.dayOfCycle || '-'}
                     </div>
                     <p className="text-text-secondary text-sm">of cycle</p>
                   </div>
@@ -90,7 +112,11 @@ export const Family: React.FC = () => {
               <CardContent>
                 <div className="space-y-4">
                   {recentEntries.map((entry) => (
-                    <div key={entry.id} className="flex items-center justify-between p-4 bg-bg-tertiary rounded-lg">
+                    <div 
+                      key={entry.id} 
+                      className="flex items-center justify-between p-4 bg-bg-tertiary rounded-lg cursor-pointer hover:bg-bg-secondary transition-colors"
+                      onClick={() => handleLogEntryClick(entry)}
+                    >
                       <div>
                         <div className="font-medium text-text-primary">
                           {entry.date.toLocaleDateString()}
@@ -240,6 +266,13 @@ export const Family: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Log Entry Modal */}
+      <LogEntryModal
+        isOpen={isModalOpen}
+        onClose={closeModal}
+        entry={selectedEntry}
+      />
     </div>
   );
 };

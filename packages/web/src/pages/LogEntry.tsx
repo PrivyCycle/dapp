@@ -4,11 +4,14 @@ import { Button } from '../components/ui/Button';
 import { Input, Textarea } from '../components/ui/Input';
 import { FlowSelector } from '../components/logging/FlowSelector';
 import { SymptomPicker } from '../components/logging/SymptomPicker';
-import { useLogEntries } from '../hooks/data/useLogEntries';
+import { useEncryptedLogEntries } from '../hooks/data/useEncryptedLogEntries';
+import { usePrivy } from '@privy-io/react-auth';
+import { encryptedIndexedDbService } from '../lib/storage/encryptedIndexedDBService';
 import type { FlowIntensity, Symptom, Mood } from '../lib/types/cycle';
 
 export const LogEntry: React.FC = () => {
-  const { addEntry } = useLogEntries();
+  const { addEntry } = useEncryptedLogEntries();
+  const { signMessage, user, authenticated } = usePrivy();
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
   const [flow, setFlow] = useState<FlowIntensity | ''>('');
   const [selectedSymptoms, setSelectedSymptoms] = useState<Symptom[]>([]);
@@ -26,6 +29,46 @@ export const LogEntry: React.FC = () => {
     { value: 'irritable', label: 'Irritable', emoji: '😤' },
     { value: 'anxious', label: 'Anxious', emoji: '😰' }
   ];
+
+  // Test function to verify encryption is working
+  const testEncryption = async () => {
+    console.log('🧪 Testing encryption...');
+    
+    if (!authenticated || !user?.id || !signMessage) {
+      alert('Please make sure you are logged in and have a wallet connected');
+      return;
+    }
+
+    try {
+      const testEntry = {
+        id: 'test-' + Date.now(),
+        date: new Date(),
+        flow: 'medium' as FlowIntensity,
+        symptoms: ['cramps'] as Symptom[],
+        mood: 'happy' as Mood,
+        energyLevel: 3,
+        notes: 'Test entry for encryption verification'
+      };
+
+      console.log('📤 Saving test entry...');
+      
+      const adaptedSignMessage = async (message: { message: string }): Promise<{ signature: string }> => {
+        return await signMessage(message);
+      };
+
+      await encryptedIndexedDbService.saveLogEntry(testEntry, user.id, adaptedSignMessage);
+      console.log('✅ Test entry saved successfully');
+
+      console.log('📥 Loading test entries...');
+      const entries = await encryptedIndexedDbService.getLogEntries(user.id, adaptedSignMessage);
+      console.log('✅ Test entries loaded:', entries.length);
+
+      alert(`Encryption test successful! Found ${entries.length} entries in storage.`);
+    } catch (error) {
+      console.error('❌ Encryption test failed:', error);
+      alert(`Encryption test failed: ${error}`);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent): Promise<void> => {
     e.preventDefault();
@@ -68,9 +111,14 @@ export const LogEntry: React.FC = () => {
               <h1 className="text-2xl font-bold text-text-primary">Log Entry</h1>
               <p className="text-text-secondary">Track your period, symptoms, and mood</p>
             </div>
-            <Button variant="ghost" size="sm">
-              View History
-            </Button>
+            <div className="flex space-x-2">
+              <Button variant="ghost" size="sm" onClick={testEncryption}>
+                Test Encryption
+              </Button>
+              <Button variant="ghost" size="sm">
+                View History
+              </Button>
+            </div>
           </div>
         </div>
       </div>

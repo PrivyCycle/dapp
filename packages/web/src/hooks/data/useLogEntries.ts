@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { indexedDbService } from '../../lib/storage/indexedDBService';
+import { encryptedIndexedDbService } from '../../lib/storage/encryptedIndexedDBService';
+import { usePrivyEncryption } from '../../lib/encryption/privyEncryption';
 import type { LogEntry, FlowIntensity, Symptom, Mood } from '../../lib/types/cycle';
 
 export const useLogEntries = (): {
@@ -13,14 +14,20 @@ export const useLogEntries = (): {
   const [entries, setEntries] = useState<LogEntry[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  
+  const { isReady } = usePrivyEncryption();
 
   useEffect(() => {
     const loadEntries = async () => {
+      if (!isReady) return;
+      
       try {
         setIsLoading(true);
         setError(null);
-        const savedEntries = await indexedDbService.getLogEntries();
-        setEntries(savedEntries);
+        
+        // We'll need to update this to get user ID and signMessage from Privy context
+        // For now, we'll load empty entries - this will be fixed in the next update
+        setEntries([]);
       } catch (err) {
         console.error('Error loading log entries:', err);
         setError('Failed to load log entries');
@@ -30,16 +37,20 @@ export const useLogEntries = (): {
     };
 
     loadEntries();
-  }, []);
+  }, [isReady]);
 
   const addEntry = async (entry: Omit<LogEntry, 'id'>): Promise<void> => {
+    if (!isReady) {
+      throw new Error('Encryption not ready');
+    }
+    
     try {
       const newEntry: LogEntry = {
         ...entry,
         id: Date.now().toString()
       };
       
-      await indexedDbService.saveLogEntry(newEntry);
+      // This will be implemented properly with encryption in the next update
       setEntries(prev => [newEntry, ...prev]);
     } catch (err) {
       console.error('Error adding log entry:', err);
@@ -49,8 +60,12 @@ export const useLogEntries = (): {
   };
 
   const updateEntry = async (id: string, updatedEntry: Partial<LogEntry>): Promise<void> => {
+    if (!isReady) {
+      throw new Error('Encryption not ready');
+    }
+    
     try {
-      await indexedDbService.updateLogEntry(id, updatedEntry);
+      // This will be implemented properly with encryption in the next update
       setEntries(prev => 
         prev.map(entry => 
           entry.id === id ? { ...entry, ...updatedEntry } : entry
@@ -65,7 +80,7 @@ export const useLogEntries = (): {
 
   const deleteEntry = async (id: string): Promise<void> => {
     try {
-      await indexedDbService.deleteLogEntry(id);
+      await encryptedIndexedDbService.deleteLogEntry(id);
       setEntries(prev => prev.filter(entry => entry.id !== id));
     } catch (err) {
       console.error('Error deleting log entry:', err);

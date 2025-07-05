@@ -1,19 +1,164 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { useCycleData, getCyclePhaseInfo, getDaysUntilNextPeriod } from '../hooks/data/useCycleData';
-import { useLogEntries } from '../hooks/data/useLogEntries';
+import { useEncryptedLogEntries } from '../hooks/data/useEncryptedLogEntries';
+import { usePrivy } from '@privy-io/react-auth';
+import { encryptedIndexedDbService } from '../lib/storage/encryptedIndexedDBService';
+import { LogEntryModal } from '../components/logging/LogEntryModal';
+import { type LogEntry } from '../lib/types/cycle';
 
 export const Dashboard: React.FC = () => {
   const { currentCycle, prediction, isLoading: cycleLoading } = useCycleData();
-  const { entries, isLoading: entriesLoading } = useLogEntries();
+  const { 
+    entries, 
+    isLoading: entriesLoading, 
+    error: entriesError,
+    isInitialized,
+    initializeData,
+    clearStorageAndRetry
+  } = useEncryptedLogEntries();
+  const { user, authenticated, ready, signMessage } = usePrivy();
+  
+  // Modal state
+  const [selectedEntry, setSelectedEntry] = useState<LogEntry | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
+  // Handle log entry click
+  const handleLogEntryClick = (entry: LogEntry) => {
+    setSelectedEntry(entry);
+    setIsModalOpen(true);
+  };
+
+  // Close modal
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setSelectedEntry(null);
+  };
+
+  // Debug function to check what's in IndexedDB
+  const debugStorage = async () => {
+    if (!authenticated || !user?.id || !signMessage) {
+      alert('Not authenticated');
+      return;
+    }
+
+    try {
+      console.log('🔍 Debug: Checking IndexedDB storage...');
+      
+      const adaptedSignMessage = async (message: { message: string }): Promise<{ signature: string }> => {
+        return await signMessage(message);
+      };
+
+      const dbEntries = await encryptedIndexedDbService.getLogEntries(user.id, adaptedSignMessage);
+      
+      console.log('📊 Debug Results:');
+      console.log('State entries count:', entries.length);
+      console.log('Database entries count:', dbEntries.length);
+      console.log('State entries:', entries);
+      console.log('Database entries:', dbEntries);
+      
+      alert(`State: ${entries.length} entries\nDatabase: ${dbEntries.length} entries\nCheck console for details`);
+    } catch (error) {
+      console.error('Debug error:', error);
+      alert(`Debug failed: ${error}`);
+    }
+  };
+
+
+
+  // Show loading while Privy is initializing
+  if (!ready) {
+    return (
+      <div className="min-h-screen bg-bg-primary flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-8 h-8 border-2 border-accent-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-text-secondary">Initializing wallet connection...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show initialization screen when authenticated but data not initialized
+  if (authenticated && !isInitialized && !entriesLoading) {
+    return (
+      <div className="min-h-screen bg-bg-primary">
+        {/* Header */}
+        <div className="bg-bg-secondary border-b border-border-primary">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-2xl font-bold text-text-primary">PrivyCycle</h1>
+                <p className="text-text-secondary">Your private period tracker</p>
+              </div>
+              <div className="text-sm text-text-secondary">
+                Welcome, {user?.email?.address}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Initialization Content */}
+        <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          <Card className="text-center">
+            <CardContent className="py-12">
+              <div className="mb-8">
+                <div className="w-16 h-16 bg-accent-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <svg className="w-8 h-8 text-accent-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                  </svg>
+                </div>
+                <h2 className="text-2xl font-bold text-text-primary mb-2">Initialize Your Private Data</h2>
+                <p className="text-text-secondary max-w-md mx-auto">
+                  Your cycle tracking data will be encrypted with your wallet before being stored locally. 
+                  Only you can access this information.
+                </p>
+              </div>
+
+              {entriesError && (
+                <div className="bg-error/10 border border-error/20 rounded-lg p-4 mb-6">
+                  <p className="text-error text-sm">{entriesError}</p>
+                </div>
+              )}
+
+              <div className="space-y-4">
+                <Button 
+                  variant="primary" 
+                  size="lg"
+                  onClick={initializeData}
+                  disabled={entriesLoading}
+                  className="w-full max-w-xs"
+                >
+                  {entriesLoading ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                      Initializing...
+                    </>
+                  ) : (
+                    'Initialize Encrypted Data'
+                  )}
+                </Button>
+                
+                <div className="text-xs text-text-muted max-w-sm mx-auto">
+                  <p className="mb-2">🔒 <strong>Bank-level encryption</strong></p>
+                  <p className="mb-2">🔑 <strong>Only your wallet can decrypt</strong></p>
+                  <p>💾 <strong>Data stored locally on your device</strong></p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
+
+  // Show loading while data is being loaded
   if (cycleLoading || entriesLoading) {
     return (
       <div className="min-h-screen bg-bg-primary flex items-center justify-center">
         <div className="text-center">
           <div className="w-8 h-8 border-2 border-accent-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-text-secondary">Loading your cycle data...</p>
+          <p className="text-text-secondary">Loading your encrypted cycle data...</p>
         </div>
       </div>
     );
@@ -23,7 +168,11 @@ export const Dashboard: React.FC = () => {
   const showCyclePlaceholder = !currentCycle;
   const showPredictionPlaceholder = !prediction;
 
-  const phaseInfo = currentCycle ? getCyclePhaseInfo(currentCycle.phase) : { name: 'No Data', description: 'No cycle data available. Please log your period to get started.', color: 'text-text-muted' };
+  const phaseInfo = currentCycle ? getCyclePhaseInfo(currentCycle.phase) : { 
+    name: 'No Data', 
+    description: 'No cycle data available. Please log your period to get started.', 
+    color: 'text-text-muted' 
+  };
   const daysUntilPeriod = prediction ? getDaysUntilNextPeriod(prediction) : '-';
   const recentEntries = entries.slice(0, 3);
 
@@ -37,9 +186,20 @@ export const Dashboard: React.FC = () => {
               <h1 className="text-2xl font-bold text-text-primary">PrivyCycle</h1>
               <p className="text-text-secondary">Your private period tracker</p>
             </div>
-            <Button variant="primary" size="sm">
-              Log Entry
-            </Button>
+            <div className="flex items-center space-x-4">
+              <div className="text-sm text-text-secondary">
+                {entries.length} entries • 🔒 Encrypted
+              </div>
+              <Button variant="ghost" size="sm" onClick={debugStorage}>
+                Debug Storage
+              </Button>
+              <Button variant="ghost" size="sm" onClick={clearStorageAndRetry}>
+                Clear Data
+              </Button>
+              <Button variant="primary" size="sm">
+                Log Entry
+              </Button>
+            </div>
           </div>
         </div>
       </div>
@@ -97,10 +257,16 @@ export const Dashboard: React.FC = () => {
               <CardContent>
                 <div className="space-y-4">
                   {recentEntries.length === 0 ? (
-                    <div className="text-center text-text-secondary py-4">No entries yet. Start logging your symptoms and moods!</div>
+                    <div className="text-center text-text-secondary py-4">
+                      No entries yet. Start logging your symptoms and moods!
+                    </div>
                   ) : (
                     recentEntries.map((entry) => (
-                      <div key={entry.id} className="flex items-center justify-between p-4 bg-bg-tertiary rounded-lg">
+                      <div 
+                        key={entry.id} 
+                        className="flex items-center justify-between p-4 bg-bg-tertiary rounded-lg cursor-pointer hover:bg-bg-secondary transition-colors"
+                        onClick={() => handleLogEntryClick(entry)}
+                      >
                         <div>
                           <div className="font-medium text-text-primary">
                             {entry.date.toLocaleDateString()}
@@ -206,6 +372,13 @@ export const Dashboard: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Log Entry Modal */}
+      <LogEntryModal
+        isOpen={isModalOpen}
+        onClose={closeModal}
+        entry={selectedEntry}
+      />
     </div>
   );
 };

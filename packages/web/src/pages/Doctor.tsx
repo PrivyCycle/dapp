@@ -2,11 +2,11 @@ import React, { useState } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { useCycleData } from '../hooks/data/useCycleData';
-import { useLogEntries } from '../hooks/data/useLogEntries';
+import { useEncryptedLogEntries } from '../hooks/data/useEncryptedLogEntries';
 
 export const Doctor: React.FC = () => {
   const { currentCycle } = useCycleData();
-  const { entries } = useLogEntries();
+  const { entries } = useEncryptedLogEntries();
   const [expirationDays, setExpirationDays] = useState(7);
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedCode, setGeneratedCode] = useState<string | null>(null);
