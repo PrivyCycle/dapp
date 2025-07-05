@@ -32,7 +32,7 @@ export const LogEntry: React.FC = () => {
     setIsSubmitting(true);
 
     try {
-      addEntry({
+      await addEntry({
         date: new Date(selectedDate),
         flow: flow || undefined,
         symptoms: selectedSymptoms,

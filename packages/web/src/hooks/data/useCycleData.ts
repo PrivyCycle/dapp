@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { indexedDbService } from '../../lib/storage/indexedDBService';
 import type { CycleData, CyclePhase, Prediction } from '../../lib/types/cycle';
 
 export const useCycleData = (): {
@@ -7,18 +8,38 @@ export const useCycleData = (): {
   isLoading: boolean;
   error: string | null;
 } => {
-  const [currentCycle] = useState<CycleData | null>(null);
-  const [prediction] = useState<Prediction | null>(null);
+  const [currentCycle, setCurrentCycle] = useState<CycleData | null>(null);
+  const [prediction, setPrediction] = useState<Prediction | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [error] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Simulate loading
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 1000);
+    const loadCycleData = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+        
+        // Load cycle data from IndexedDB
+        const cycles = await indexedDbService.getCycleData();
+        const predictions = await indexedDbService.getPredictions();
+        
+        // Get the most recent cycle
+        const mostRecentCycle = cycles.length > 0 ? cycles[cycles.length - 1] : null;
+        setCurrentCycle(mostRecentCycle);
+        
+        // Get the most recent prediction
+        const mostRecentPrediction = predictions.length > 0 ? predictions[predictions.length - 1] : null;
+        setPrediction(mostRecentPrediction);
+        
+      } catch (err) {
+        console.error('Error loading cycle data:', err);
+        setError('Failed to load cycle data');
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-    return () => clearTimeout(timer);
+    loadCycleData();
   }, []);
 
   return {
