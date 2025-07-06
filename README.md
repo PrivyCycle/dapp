@@ -38,6 +38,8 @@ PrivyCycle provides a private vault for your cycle data, encrypts everything on-
 - **Open Source & Auditable**  
   MIT-licensed code, reproducible builds, and community-driven security reviews.
 
+![Image](https://github.com/user-attachments/assets/19a7bb59-7ed5-463b-a754-fab59ef98409)
+
 ---
 
 ## Demo & Screenshots
@@ -60,6 +62,8 @@ PrivyCycle provides a private vault for your cycle data, encrypts everything on-
 4. **Store on IPFS** as encrypted blobs  
 5. **Anonymized AI** (0G Compute) generates insights  
 6. **Share & Revoke** secure access links  
+
+![Image](https://github.com/user-attachments/assets/f987f484-cd9d-4319-9a80-8bb01e30ca8c)
 
 ---
 
