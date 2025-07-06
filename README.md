@@ -1,141 +1,133 @@
-PrivyCycle
+# PrivyCycle
+
 Your cycle, your data—securely yours.
 
-A Web3-native period-tracking app built with end-to-end encryption. Whether you’re Web3-savvy or coming straight from Web2, PrivyCycle makes it seamless to record, control, and share your menstrual health information.
+A Web3-native period-tracking app with end-to-end encryption, seamless social-login UX, and user-controlled sharing.
 
-Problem Statement
-Most period-tracking apps expose or sell intimate cycle data, putting users at risk. Once you log your history, there’s no guarantee you can ever get it back—or keep it private if the company folds. Doctors, partners, and future family members have no easy, secure way to access the insights they need, and critical health patterns may be lost forever.
+---
 
-PrivyCycle provides a truly private vault for your cycle data, encrypts everything for you, and gives you simple tools to share it only with people you trust.
+## Problem Statement
 
-Key Features
-End-to-End Encryption
-All cycle logs—period dates, symptoms, moods, lifestyle entries—are encrypted on your device before they ever leave it.
+Most period-tracking apps expose or sell intimate cycle data, putting users at risk. Once you log your history, there’s no guarantee you can ever retrieve it—or keep it private if the company folds. Doctors, partners, and future family members have no easy, secure way to access the insights they need, and critical health patterns may be lost forever.
 
-Seamless Web2-Style UX
-Social-login via Privy (e.g. Google, Apple) lets anyone start tracking in seconds, with no crypto jargon.
+PrivyCycle provides a private vault for your cycle data, encrypts everything on-device, and gives you simple tools to share it only with people you trust.
 
-Encrypted Local Storage
-Zircuit’s encryption SDK keeps your raw data safe on your phone; only you hold the decryption keys.
+---
 
-AI-Driven Suggestions
-0G powers fully anonymized insights for users, doctors, and partners—no personal data ever exposed.
+## Key Features
 
-IPFS-Backed Portability
-Your encrypted logs live on IPFS: you can export or revoke access for doctors, partners, or family members (sisters, daughters, etc.) at any time.
+- **End-to-End Encryption**  
+  All cycle logs—period dates, symptoms, moods, lifestyle entries—are encrypted locally before leaving your device.
 
-“Gift to Daughter” Snapshot
-Create an encrypted archive of your cycle history that you can hand off to your daughter when she needs it—no minting or time-lock complexity.
+- **Seamless Social-Login UX**  
+  Sign in with Google, Apple, or email via Privy SDK; no crypto jargon required.
 
-Open Source & Audit-Friendly
-MIT-licensed code, reproducible builds, and community-driven security reviews.
+- **On-Device Encryption**  
+  Zircuit’s SDK secures all data on your phone; you and only you hold the keys.
 
-Demo & Screenshots
-(Replace these with actual links/images)
+- **Anonymized AI Insights**  
+  0G powers fully anonymized suggestions for users, doctors, and partners—without exposing personal data.
 
-Onboarding & Login Flow
+- **IPFS-Backed Portability**  
+  Encrypted logs stored on IPFS. Grant or revoke access to doctors, partners, or family members at any time.
 
-Cycle Calendar & Insights
+- **“Gift to Daughter” Archive**  
+  Export an encrypted snapshot of your full cycle history for your daughter’s future reference.
 
-Doctor & Family Sharing Dashboards
+- **Open Source & Auditable**  
+  MIT-licensed code, reproducible builds, and community-driven security reviews.
 
-Gift to Daughter Workflow
+---
 
-Architecture Overview
+## Demo & Screenshots
 
-Sign In via social login powered by Privy
+> *Replace these with real assets*  
+> - Onboarding & Login Flow: `docs/onboarding.gif`  
+> - Cycle Calendar & Insights: `docs/calendar.png`  
+> - Doctor & Family Sharing Dashboards: `docs/dashboard.png`  
+> - Gift to Daughter Workflow: `docs/heirloom.gif`  
 
-Log Data in the mobile app UI
+---
 
-Encrypt Locally with Zircuit’s SDK—keys never leave your device
+## Architecture Overview
 
-Store on IPFS—encrypted blobs anchored in decentralized storage
+![Architecture Diagram](docs/architecture.png)
 
-Anonymized AI: 0G processes aggregate data to generate tailored tips for you, your doctor, and your partner
+1. **Sign In** via social-login (Privy SDK)  
+2. **Log Data** in the mobile UI  
+3. **Encrypt Locally** (Zircuit SDK)  
+4. **Store on IPFS** as encrypted blobs  
+5. **Anonymized AI** (0G Compute) generates insights  
+6. **Share & Revoke** secure access links  
 
-Export & Share: grant or revoke secure access links to trusted circles
+---
 
-Tech Stack
-Privy – Embedded wallet & social-login SDK, key management
+## Tech Stack
 
-Zircuit – On-device encryption library for sensitive health logs
+- **Privy SDK** — Embedded social-login and key management  
+- **Zircuit Encryption** — On-device data protection  
+- **0G** — Privacy-preserving AI compute and data availability  
+- **IPFS** — Decentralized encrypted storage  
+- **React Native** — Cross-platform mobile app  
+- **Node.js / Express** — Metadata API and notification backend  
 
-0G – Decentralized AI compute & data-availability for anonymized suggestions
+---
 
-IPFS – Encrypted data storage and retrieval
+## Roadmap
 
-React Native – Cross-platform mobile UI
+**Phase I (Hackathon MVP)**  
+- Core cycle calendar & symptom tracking  
+- End-to-end encryption & social-login  
+- Doctor, family, partner share flows  / Dashboard
+- “Gift to Daughter” encrypted archive
+- Local Data Storage
+- Open Source
 
-Node.js / Express – Metadata APIs and notification backend
+**Future Milestones**  
+- Web2-style mode with hidden Web3 plumbing  
+- Continuous penetration testing and security audits  
+- Full AI suggestion engine for users, doctors, and partners  
+- Token-based rewards marketplace for anonymized data  
+- One-tap decryption and biometric unlock  
+- Enhanced analytics dashboards for healthcare professionals  
 
-Roadmap
-Phase I (Hackathon MVP)
+---
 
-Core cycle calendar & symptom tracking
+## Hackathon Bounties
 
-End-to-end encryption & social login
+### Privy — Best Consumer App Built on Privy 
+- Embedded social-login and key management  
+- Seamless, non-crypto UX via Privy SDK  
+- Encrypted user vaults by default  
 
-Basic doctor and family share flows
+### Zircuit — Best App Idea 
+- On-device encryption with Zircuit SDK  
+- Account abstraction to hide blockchain complexity  
+- Vision for tokenized incentives on anonymized data  
 
-“Gift to Daughter” encrypted archive
+### 0G — Most Innovative Use of 0G Ecosystem
+- Privacy-preserving AI inference on 0G Compute Network  
+- Decentralized data-availability for encrypted logs  
+- Anonymized insights for three personas: user, doctor, partner  
 
-Future Milestones
+---
 
-Abstract away Web3 details in a true “Web2” mode
+## Team
 
-Ongoing penetration testing and security improvements
+- **Migle** — Idea, PM, UX/UI Design  
+- **Atlas** — Backend & API Development  
+- **Dashen** — Encryption Integration
+- **Rayan** — Pitch 
 
-Full AI suggestion engine for users, doctors, partners
+---
 
-Token-based rewards marketplace for anonymized data contributions
+## Links
 
-Enhanced UX: one-tap decryption, biometric unlock, seamless onboarding
+- **Repository**: https://github.com/your-org/privycycle *(placeholder)*  
+- **Live Demo**: https://privycycle.app/demo *(placeholder)*  
+- **Architecture Diagram**: `docs/architecture.png`  
+- **Pitch Deck**: `docs/pitch.pdf`  
 
-Advanced analytics dashboards for healthcare professionals
+---
 
-Hackathon Bounties
-Privy — Best Consumer App Built on Privy (⟺ $1,700)
-Uses Privy’s embedded wallet SDK for frictionless social login
-
-Encrypts user keys & handles auth under the hood
-
-Delivers a non-crypto user experience that anyone can use
-
-Zircuit — Best App Idea (⟺ up to $4,500)
-Leverages Zircuit’s encryption SDK for on-device data protection
-
-Integrates account abstraction to hide blockchain complexity
-
-Proposes tokenized incentives for anonymized data sharing
-
-0G — Most Innovative Use of 0G Ecosystem (⟺ $5,000)
-Uses 0G’s compute network for privacy-preserving AI inference
-
-Stores encrypted logs via 0G DA layer and on-chain metadata
-
-Demonstrates functionality with anonymized insights for three distinct personas
-
-Team
-
-Migle — Concept, Project Management, UX/UI Design
-
-Atlas — Backend & API Development
-
-Dashen — Encryption Integration 
-
-Rayan — Pitch 
-
-Repository: https://github.com/your-org/privycycle (placeholder)
-Live Demo: https://privycycle.app/demo (placeholder)
-
-Built at EthGlobal Cannes 2025 — empowering women with true data ownership, privacy, and intergenerational health insights. Dedicated to the activists who continue to bravely fight for their Privacy & Security Rights. 
-
-
-
-
-
-
-
-
-
-Ask ChatGPT
+Built at EthGlobal Cannes 2025 — empowering women with true data ownership, privacy, and intergenerational health insights. Dedicated to all Activists fighting for Privacy And Security as a Human Right. 
