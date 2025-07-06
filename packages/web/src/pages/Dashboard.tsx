@@ -222,10 +222,10 @@ export const Dashboard: React.FC = () => {
 
 
       {/* Main Content */}
-      <div className="max-w-6xl mx-auto px-6 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4 sm:py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-8">
           {/* Left Column - Primary Content */}
-          <div className="lg:col-span-2 space-y-8">
+          <div className="lg:col-span-2 space-y-4 sm:space-y-8">
             {/* Cycle Calendar */}
             {hasData ? (
               <Card>

@@ -5,9 +5,9 @@ import { useSharing } from '../../hooks/sharing/useSharing';
 import { useSponsoredContractSharing } from '../../hooks/sharing/useSponsoredContractSharing';
 import type { LogEntry } from '../../lib/types/cycle';
 
-// Test recipient key generated for development/testing
-// Using a different address than the sponsor wallet to avoid "cannot share with yourself" error
-const TEST_RECIPIENT_ADDRESS = '0xFc7251B4834a2514B6CaCEc6918aed100C006918';
+// Test recipient address for development/testing
+// Using the specified test account for sharing
+const TEST_RECIPIENT_ADDRESS = '0xCb36bd09998c5687af9Bf3348B25245976Fd3e7F';
 
 interface ShareDataModalProps {
   isOpen: boolean;

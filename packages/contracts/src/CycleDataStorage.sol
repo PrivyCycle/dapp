@@ -32,6 +32,7 @@ contract CycleDataStorage {
 
     struct SharedDataPackage {
         string ipfsHash;           // IPFS location of complete encrypted dataset
+        address sharer;            // Who shared this data
         address recipient;         // Who can decrypt this
         uint8 shareType;          // 0=partner, 1=family, 2=doctor
         uint256 timestamp;        // When shared (permanent record)
@@ -245,6 +246,7 @@ contract CycleDataStorage {
 
         SharedDataPackage memory newShare = SharedDataPackage({
             ipfsHash: ipfsHash,
+            sharer: msg.sender,
             recipient: recipient,
             shareType: shareType,
             timestamp: block.timestamp
@@ -255,6 +257,41 @@ contract CycleDataStorage {
         sharedToUser[recipient].push(newShare);
 
         emit DataShared(msg.sender, recipient, ipfsHash, shareType);
+    }
+
+    /**
+     * @dev Share encrypted data with another user (sponsored version)
+     * @param sharer The actual user who is sharing the data
+     * @param recipient The address of the user to share data with
+     * @param ipfsHash The IPFS hash of the encrypted data package
+     * @param shareType The type of sharing (0=partner, 1=family, 2=doctor)
+     * @notice This function allows gas sponsorship while preserving the actual sharer identity
+     */
+    function shareDataSponsored(
+        address sharer,
+        address recipient,
+        string calldata ipfsHash,
+        uint8 shareType
+    ) external {
+        require(sharer != address(0), "CycleDataStorage: Invalid sharer");
+        require(recipient != address(0), "CycleDataStorage: Invalid recipient");
+        require(recipient != sharer, "CycleDataStorage: Cannot share with yourself");
+        require(bytes(ipfsHash).length > 0, "CycleDataStorage: Invalid IPFS hash");
+        require(shareType <= 2, "CycleDataStorage: Invalid share type");
+
+        SharedDataPackage memory newShare = SharedDataPackage({
+            ipfsHash: ipfsHash,
+            sharer: sharer,  // Use the actual sharer, not msg.sender
+            recipient: recipient,
+            shareType: shareType,
+            timestamp: block.timestamp
+        });
+
+        // Add to both mappings for efficient lookups
+        sharedByUser[sharer].push(newShare);
+        sharedToUser[recipient].push(newShare);
+
+        emit DataShared(sharer, recipient, ipfsHash, shareType);
     }
 
     /**

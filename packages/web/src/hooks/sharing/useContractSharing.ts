@@ -22,6 +22,7 @@ const SHARING_ABI = [
       {
         "components": [
           { "internalType": "string", "name": "ipfsHash", "type": "string" },
+          { "internalType": "address", "name": "sharer", "type": "address" },
           { "internalType": "address", "name": "recipient", "type": "address" },
           { "internalType": "uint8", "name": "shareType", "type": "uint8" },
           { "internalType": "uint256", "name": "timestamp", "type": "uint256" }
@@ -41,6 +42,7 @@ const SHARING_ABI = [
       {
         "components": [
           { "internalType": "string", "name": "ipfsHash", "type": "string" },
+          { "internalType": "address", "name": "sharer", "type": "address" },
           { "internalType": "address", "name": "recipient", "type": "address" },
           { "internalType": "uint8", "name": "shareType", "type": "uint8" },
           { "internalType": "uint256", "name": "timestamp", "type": "uint256" }
@@ -90,6 +92,7 @@ const SHARING_ABI = [
 
 export interface ContractShare {
   ipfsHash: string;
+  sharer: string;
   recipient: string;
   shareType: number;
   timestamp: number;
@@ -387,11 +390,13 @@ Note: You may need to connect your wallet to the faucet website first.
       
       return shares.map((share: {
         ipfsHash: string;
+        sharer: string;
         recipient: string;
         shareType: bigint;
         timestamp: bigint;
       }) => ({
         ipfsHash: share.ipfsHash,
+        sharer: share.sharer,
         recipient: share.recipient,
         shareType: Number(share.shareType),
         timestamp: Number(share.timestamp)
@@ -415,11 +420,13 @@ Note: You may need to connect your wallet to the faucet website first.
       
       return shares.map((share: {
         ipfsHash: string;
+        sharer: string;
         recipient: string;
         shareType: bigint;
         timestamp: bigint;
       }) => ({
         ipfsHash: share.ipfsHash,
+        sharer: share.sharer,
         recipient: share.recipient,
         shareType: Number(share.shareType),
         timestamp: Number(share.timestamp)

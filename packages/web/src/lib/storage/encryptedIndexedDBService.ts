@@ -253,6 +253,11 @@ class EncryptedIndexedDbService {
     await Promise.all(promises);
   }
 
+  // Clear encryption cache
+  clearEncryptionCache(): void {
+    this.encryptionService.clearCache();
+  }
+
 }
 
 // Export a singleton instance

@@ -1,12 +1,17 @@
 import React from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/Card';
+import { Button } from '../components/ui/Button';
 import { useCycleData, getCyclePhaseInfo, getDaysUntilNextPeriod } from '../hooks/data/useCycleData';
 import { usePartnerTips, getTipPriorityColor, getTipCategoryIcon, getPhaseDescription } from '../hooks/sharing/usePartnerTips';
+import { useAIPartnerInsights } from '../hooks/ai/useAIPartnerInsights';
+import { useEncryptedLogEntries } from '../hooks/data/useEncryptedLogEntries';
 
 export const Partner: React.FC = () => {
   const { currentCycle, prediction, isLoading: cycleLoading } = useCycleData();
+  const { entries } = useEncryptedLogEntries();
   const phase = currentCycle ? currentCycle.phase : undefined;
   const { currentPhaseTips, isLoading: tipsLoading } = usePartnerTips(phase || 'menstrual');
+  const { insights, confidence, isLoading: aiLoading, error: aiError, refreshInsights } = useAIPartnerInsights();
 
   if (cycleLoading || tipsLoading) {
     return (
@@ -86,6 +91,72 @@ export const Partner: React.FC = () => {
                 <div className="mt-6 p-4 bg-bg-tertiary rounded-lg">
                   <p className="text-text-secondary text-center">{phaseDescription}</p>
                 </div>
+              </CardContent>
+            </Card>
+
+            {/* AI Partner Insights */}
+            <Card className="mb-6">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle>AI Partner Support Guide</CardTitle>
+                  <div className="flex items-center space-x-2">
+                    {confidence > 0 && (
+                      <span className="text-xs text-text-muted">
+                        Confidence: {Math.round(confidence * 100)}%
+                      </span>
+                    )}
+                    <Button
+                      onClick={refreshInsights}
+                      variant="ghost"
+                      size="sm"
+                      isLoading={aiLoading}
+                    >
+                      🔄 Refresh
+                    </Button>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                {aiLoading ? (
+                  <div className="flex items-center justify-center py-8">
+                    <div className="text-center">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-accent-primary mx-auto mb-4"></div>
+                      <p className="text-text-secondary">Getting personalized support tips...</p>
+                    </div>
+                  </div>
+                ) : aiError ? (
+                  <div className="p-4 bg-error/10 border border-error/20 rounded-lg">
+                    <p className="text-error text-sm">{aiError}</p>
+                    <Button
+                      onClick={refreshInsights}
+                      variant="secondary"
+                      size="sm"
+                      className="mt-2"
+                    >
+                      Try Again
+                    </Button>
+                  </div>
+                ) : insights ? (
+                  <div className="prose prose-sm max-w-none">
+                    <div className="whitespace-pre-wrap text-text-primary bg-bg-tertiary p-4 rounded-lg">
+                      {insights}
+                    </div>
+                    <div className="mt-4 p-3 bg-info/10 border border-info/20 rounded-lg">
+                      <p className="text-xs text-info">
+                        💝 These AI-generated suggestions are based on cycle patterns and are meant to help you be a supportive partner.
+                      </p>
+                    </div>
+                  </div>
+                ) : entries.length === 0 ? (
+                  <div className="text-center py-8">
+                    <p className="text-text-muted">No cycle data available for analysis.</p>
+                    <p className="text-text-muted text-sm mt-2">Ask your partner to start logging their cycle to get AI insights.</p>
+                  </div>
+                ) : (
+                  <div className="text-center py-8">
+                    <p className="text-text-muted">Click refresh to get personalized support tips based on current cycle data.</p>
+                  </div>
+                )}
               </CardContent>
             </Card>
 

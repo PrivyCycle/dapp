@@ -241,6 +241,15 @@ class PrivyEncryptionService {
       throw new Error(`Decryption from recipient failed: ${error}`);
     }
   }
+
+  /**
+   * Clear any cached encryption keys or data
+   */
+  clearCache(): void {
+    // Since this service doesn't maintain any cache currently,
+    // this is a no-op but provides the interface for future caching
+    console.log('Encryption cache cleared');
+  }
 }
 
 // Hook to use Privy encryption service

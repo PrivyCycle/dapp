@@ -52,11 +52,8 @@ export const SharedDataViewer: React.FC<SharedDataViewerProps> = ({ className = 
     setIsLoading(true);
 
     try {
-      // For now, we'll use a placeholder public key
-      // In a real app, you'd get this from the user's profile or wallet
-      const userPublicKey = 'user-public-key-placeholder';
-      
-      const data = await sharing.downloadSharedData(share.ipfsHash, userPublicKey);
+      // Use the recipient's address (which should be the current user's address for received shares)
+      const data = await sharing.downloadSharedData(share.ipfsHash, share.recipient);
       setSharedData(data);
     } catch (err) {
       console.error('Failed to load shared data:', err);
@@ -159,7 +156,7 @@ export const SharedDataViewer: React.FC<SharedDataViewerProps> = ({ className = 
                         </span>
                       </div>
                       <p className="text-sm text-gray-600 mb-2">
-                        From: <span className="font-mono text-xs">{share.recipient}</span>
+                        From: <span className="font-mono text-xs">{share.sharer}</span>
                       </p>
                       <p className="text-sm text-gray-600">
                         IPFS: <span className="font-mono text-xs">{share.ipfsHash.substring(0, 20)}...</span>

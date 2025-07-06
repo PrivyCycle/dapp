@@ -70,9 +70,26 @@ export default {
         'bold': '700',
       },
       screens: {
-        'mobile': '320px',
-        'tablet': '768px',
-        'desktop': '1024px',
+        'xs': '375px',      // Small phones
+        'sm': '640px',      // Large phones
+        'md': '768px',      // Tablets
+        'lg': '1024px',     // Small laptops
+        'xl': '1280px',     // Large laptops
+        '2xl': '1536px',    // Desktops
+      },
+      spacing: {
+        'safe-top': 'env(safe-area-inset-top)',
+        'safe-bottom': 'env(safe-area-inset-bottom)',
+        'safe-left': 'env(safe-area-inset-left)',
+        'safe-right': 'env(safe-area-inset-right)',
+      },
+      minHeight: {
+        'screen-safe': 'calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom))',
+        'dvh': '100dvh',
+      },
+      height: {
+        'screen-safe': 'calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom))',
+        'dvh': '100dvh',
       },
     },
   },

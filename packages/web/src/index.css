@@ -12,6 +12,10 @@
     font-family: 'Inter', system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    /* Mobile-first optimizations */
+    -webkit-text-size-adjust: 100%;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
   }
   
   body {
@@ -20,12 +24,44 @@
     background-color: #FFF9F7; /* Ivory white */
     color: #2D1B1F; /* Dark brown text */
     min-height: 100vh;
+    min-height: 100dvh; /* Dynamic viewport height for mobile */
     line-height: 1.5;
+    /* Mobile scroll improvements */
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: none;
   }
   
   #root {
     min-height: 100vh;
+    min-height: 100dvh; /* Dynamic viewport height for mobile */
     background-color: #FFF9F7; /* Ivory white */
+  }
+
+  /* Mobile-first touch improvements */
+  button, [role="button"], input[type="submit"], input[type="button"] {
+    -webkit-appearance: none;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+
+  /* Ensure minimum touch target size */
+  button, [role="button"], a {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  /* Improve mobile input experience */
+  input, textarea, select {
+    font-size: 16px; /* Prevents zoom on iOS */
+    -webkit-appearance: none;
+  }
+
+  /* Safe area handling for mobile devices */
+  .safe-area-inset {
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
   }
 }
 

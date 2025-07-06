@@ -1,0 +1,7 @@
+{
+  "transactions": [
+    {
+      "rpc": "https://garfield-testnet.zircuit.com"
+    }
+  ]
+}

@@ -74,7 +74,13 @@ export const useSharing = (): UseSharing => {
         recipientPublicKey,
         shareType,
         shareEntries,
-        encryption,
+        {
+          decrypt: encryption.decrypt.bind(encryption),
+          encryptForRecipient: async (data: string, publicKey: string) => {
+            // Use the sharing service's encryption method
+            return sharingService.encryptForRecipient(data, publicKey);
+          }
+        },
         user.id
       );
 

@@ -126,26 +126,30 @@ export const Calendar: React.FC<CalendarProps> = ({
   return (
     <div className="bg-bg-secondary rounded-xl p-6">
       {/* Calendar Header */}
-      <div className="flex items-center justify-between mb-6">
-        <h3 className="text-xl font-semibold text-text-primary">
-          {monthNames[currentMonth]} {currentYear}
-        </h3>
-        <div className="flex items-center space-x-4 text-xs">
+      <div className="mb-6">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-xl font-semibold text-text-primary">
+            {monthNames[currentMonth]} {currentYear}
+          </h3>
+        </div>
+        
+        {/* Phase Legend - Responsive */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-4 text-xs">
           <div className="flex items-center space-x-2">
-            <div className="w-3 h-3 bg-error/20 border border-error/40 rounded"></div>
-            <span className="text-text-secondary">Menstrual</span>
+            <div className="w-3 h-3 bg-error/20 border border-error/40 rounded flex-shrink-0"></div>
+            <span className="text-text-secondary truncate">Menstrual</span>
           </div>
           <div className="flex items-center space-x-2">
-            <div className="w-3 h-3 bg-accent/20 border border-accent/40 rounded"></div>
-            <span className="text-text-secondary">Follicular</span>
+            <div className="w-3 h-3 bg-accent/20 border border-accent/40 rounded flex-shrink-0"></div>
+            <span className="text-text-secondary truncate">Follicular</span>
           </div>
           <div className="flex items-center space-x-2">
-            <div className="w-3 h-3 bg-success/20 border border-success/40 rounded"></div>
-            <span className="text-text-secondary">Ovulation</span>
+            <div className="w-3 h-3 bg-success/20 border border-success/40 rounded flex-shrink-0"></div>
+            <span className="text-text-secondary truncate">Ovulation</span>
           </div>
           <div className="flex items-center space-x-2">
-            <div className="w-3 h-3 bg-warning/20 border border-warning/40 rounded"></div>
-            <span className="text-text-secondary">Luteal</span>
+            <div className="w-3 h-3 bg-warning/20 border border-warning/40 rounded flex-shrink-0"></div>
+            <span className="text-text-secondary truncate">Luteal</span>
           </div>
         </div>
       </div>

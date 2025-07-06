@@ -1,5 +1,6 @@
 import { useState, useCallback, useEffect } from 'react';
 import { usePrivy } from '@privy-io/react-auth';
+import { ethers } from 'ethers';
 import { gasSponsorshipService } from '../../lib/gasSponsorship/sponsorshipService';
 
 // Contract ABI for sharing functions
@@ -16,12 +17,27 @@ const SHARING_ABI = [
     "type": "function"
   },
   {
-    "inputs": [],
-    "name": "getMyShares",
+    "inputs": [
+      { "internalType": "address", "name": "sharer", "type": "address" },
+      { "internalType": "address", "name": "recipient", "type": "address" },
+      { "internalType": "string", "name": "ipfsHash", "type": "string" },
+      { "internalType": "uint8", "name": "shareType", "type": "uint8" }
+    ],
+    "name": "shareDataSponsored",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "address", "name": "user", "type": "address" }
+    ],
+    "name": "getSharedByUser",
     "outputs": [
       {
         "components": [
           { "internalType": "string", "name": "ipfsHash", "type": "string" },
+          { "internalType": "address", "name": "sharer", "type": "address" },
           { "internalType": "address", "name": "recipient", "type": "address" },
           { "internalType": "uint8", "name": "shareType", "type": "uint8" },
           { "internalType": "uint256", "name": "timestamp", "type": "uint256" }
@@ -35,12 +51,15 @@ const SHARING_ABI = [
     "type": "function"
   },
   {
-    "inputs": [],
-    "name": "getSharedWithMe",
+    "inputs": [
+      { "internalType": "address", "name": "user", "type": "address" }
+    ],
+    "name": "getSharedWithUser",
     "outputs": [
       {
         "components": [
           { "internalType": "string", "name": "ipfsHash", "type": "string" },
+          { "internalType": "address", "name": "sharer", "type": "address" },
           { "internalType": "address", "name": "recipient", "type": "address" },
           { "internalType": "uint8", "name": "shareType", "type": "uint8" },
           { "internalType": "uint256", "name": "timestamp", "type": "uint256" }
@@ -79,6 +98,7 @@ const SHARING_ABI = [
 
 export interface ContractShare {
   ipfsHash: string;
+  sharer: string;
   recipient: string;
   shareType: number;
   timestamp: number;
@@ -122,6 +142,18 @@ export const useSponsoredContractSharing = (): UseSponsoredContractSharing => {
   // Contract address from environment
   const CONTRACT_ADDRESS = import.meta.env.VITE_CYCLE_DATA_STORAGE_CONTRACT_ADDRESS;
   const SPONSOR_PRIVATE_KEY = import.meta.env.VITE_SPONSOR_PRIVATE_KEY;
+
+  // Helper function to get read-only contract
+  const getReadOnlyContract = useCallback(() => {
+    if (!CONTRACT_ADDRESS) {
+      throw new Error('Contract address not configured');
+    }
+
+    const provider = new ethers.JsonRpcProvider(
+      import.meta.env.VITE_RPC_URL || 'https://garfield-testnet.zircuit.com'
+    );
+    return new ethers.Contract(CONTRACT_ADDRESS, SHARING_ABI, provider);
+  }, [CONTRACT_ADDRESS]);
 
   // Initialize gas sponsorship service
   const initializeSponsorship = useCallback(async (): Promise<void> => {
@@ -202,12 +234,12 @@ export const useSponsoredContractSharing = (): UseSponsoredContractSharing => {
       // Convert share type to number
       const shareTypeNumber = shareType === 'partner' ? 0 : shareType === 'family' ? 1 : 2;
 
-      // Execute sponsored transaction
+      // Execute sponsored transaction using shareDataSponsored to preserve actual sharer identity
       const result = await gasSponsorshipService.executeSponsoredTransaction(
         CONTRACT_ADDRESS,
         SHARING_ABI,
-        'shareData',
-        [recipientAddress, ipfsHash, shareTypeNumber],
+        'shareDataSponsored',
+        [user.wallet.address, recipientAddress, ipfsHash, shareTypeNumber],
         user.wallet.address
       );
 
@@ -253,29 +285,106 @@ export const useSponsoredContractSharing = (): UseSponsoredContractSharing => {
 
   // Read-only functions (no gas sponsorship needed)
   const getMyShares = useCallback(async (): Promise<ContractShare[]> => {
-    // Implementation would use a read-only provider
-    // For now, return empty array as this is a read operation
-    console.log('📖 getMyShares - read operation (no gas needed)');
-    return [];
-  }, []);
+    if (!authenticated || !user?.wallet?.address) {
+      throw new Error('User must be authenticated');
+    }
+
+    try {
+      console.log('📖 getMyShares - reading from blockchain...');
+      console.log('User address:', user.wallet.address);
+      
+      const contract = getReadOnlyContract();
+      
+      // Use getSharedByUser to get shares created by this user
+      const shares = await contract.getSharedByUser(user.wallet.address);
+      console.log('Raw shares from contract:', shares);
+      
+      return shares.map((share: {
+        ipfsHash: string;
+        sharer: string;
+        recipient: string;
+        shareType: bigint;
+        timestamp: bigint;
+      }) => ({
+        ipfsHash: share.ipfsHash,
+        sharer: share.sharer,
+        recipient: share.recipient,
+        shareType: Number(share.shareType),
+        timestamp: Number(share.timestamp)
+      }));
+    } catch (err) {
+      console.error('Failed to get my shares:', err);
+      throw new Error(err instanceof Error ? err.message : 'Failed to get shares');
+    }
+  }, [getReadOnlyContract, authenticated, user?.wallet?.address]);
 
   const getSharedWithMe = useCallback(async (): Promise<ContractShare[]> => {
-    // Implementation would use a read-only provider
-    console.log('📖 getSharedWithMe - read operation (no gas needed)');
-    return [];
-  }, []);
+    if (!authenticated || !user?.wallet?.address) {
+      throw new Error('User must be authenticated');
+    }
 
-  const getShareCount = useCallback(async (_userAddress?: string): Promise<number> => {
-    // Implementation would use a read-only provider
-    console.log('📖 getShareCount - read operation (no gas needed)');
-    return 0;
-  }, []);
+    try {
+      console.log('📖 getSharedWithMe - reading from blockchain...');
+      console.log('User address:', user.wallet.address);
+      
+      const contract = getReadOnlyContract();
+      
+      // Use getSharedWithUser to get shares received by this user
+      const shares = await contract.getSharedWithUser(user.wallet.address);
+      console.log('Raw shared with me from contract:', shares);
+      
+      return shares.map((share: {
+        ipfsHash: string;
+        sharer: string;
+        recipient: string;
+        shareType: bigint;
+        timestamp: bigint;
+      }) => ({
+        ipfsHash: share.ipfsHash,
+        sharer: share.sharer,
+        recipient: share.recipient,
+        shareType: Number(share.shareType),
+        timestamp: Number(share.timestamp)
+      }));
+    } catch (err) {
+      console.error('Failed to get shared with me:', err);
+      throw new Error(err instanceof Error ? err.message : 'Failed to get received shares');
+    }
+  }, [getReadOnlyContract, authenticated, user?.wallet?.address]);
 
-  const getReceivedShareCount = useCallback(async (_userAddress?: string): Promise<number> => {
-    // Implementation would use a read-only provider
-    console.log('📖 getReceivedShareCount - read operation (no gas needed)');
-    return 0;
-  }, []);
+  const getShareCount = useCallback(async (userAddress?: string): Promise<number> => {
+    try {
+      const contract = getReadOnlyContract();
+      const address = userAddress || user?.wallet?.address;
+      
+      if (!address) {
+        throw new Error('No address provided');
+      }
+      
+      const count = await contract.getShareCount(address);
+      return Number(count);
+    } catch (err) {
+      console.error('Failed to get share count:', err);
+      return 0;
+    }
+  }, [getReadOnlyContract, user?.wallet?.address]);
+
+  const getReceivedShareCount = useCallback(async (userAddress?: string): Promise<number> => {
+    try {
+      const contract = getReadOnlyContract();
+      const address = userAddress || user?.wallet?.address;
+      
+      if (!address) {
+        throw new Error('No address provided');
+      }
+      
+      const count = await contract.getReceivedShareCount(address);
+      return Number(count);
+    } catch (err) {
+      console.error('Failed to get received share count:', err);
+      return 0;
+    }
+  }, [getReadOnlyContract, user?.wallet?.address]);
 
   const isReady = ready && !!CONTRACT_ADDRESS && sponsorshipInfo.isEnabled;
 

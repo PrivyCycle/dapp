@@ -174,26 +174,26 @@ class SharingService {
   }
 
   /**
-   * Encrypt data for a specific recipient using their public key
-   * Simplified implementation for production use
+   * Create a deterministic encryption key from a wallet address
    */
-  private async encryptForRecipient(data: string, recipientPublicKey: string): Promise<EncryptedData> {
-    const salt = crypto.getRandomValues(new Uint8Array(16));
-    const iv = crypto.getRandomValues(new Uint8Array(12));
+  private async createKeyFromAddress(address: string, salt: string = 'privycycle-sharing-v1'): Promise<CryptoKey> {
+    // Normalize the address
+    const normalizedAddress = address.toLowerCase();
     
-    // Derive key from recipient's public key
+    // Create key material from address + salt
     const keyMaterial = await crypto.subtle.importKey(
       'raw',
-      new TextEncoder().encode(recipientPublicKey),
+      new TextEncoder().encode(normalizedAddress + salt),
       { name: 'PBKDF2' },
       false,
       ['deriveKey']
     );
 
+    // Derive a proper encryption key
     const key = await crypto.subtle.deriveKey(
       {
         name: 'PBKDF2',
-        salt: salt,
+        salt: new TextEncoder().encode(salt),
         iterations: 100000,
         hash: 'SHA-256'
       },
@@ -202,6 +202,19 @@ class SharingService {
       false,
       ['encrypt', 'decrypt']
     );
+
+    return key;
+  }
+
+  /**
+   * Encrypt data for a specific recipient using their wallet address
+   */
+  async encryptForRecipient(data: string, recipientAddress: string): Promise<EncryptedData> {
+    const salt = 'privycycle-sharing-v1';
+    const iv = crypto.getRandomValues(new Uint8Array(12));
+    
+    // Create encryption key from recipient's address
+    const key = await this.createKeyFromAddress(recipientAddress, salt);
     
     // Encrypt the data
     const encodedData = new TextEncoder().encode(data);
@@ -217,7 +230,7 @@ class SharingService {
     
     return {
       version: 'v1',
-      salt: Array.from(salt).map(b => b.toString(16).padStart(2, '0')).join(''),
+      salt: salt,
       iv: Array.from(iv).map(b => b.toString(16).padStart(2, '0')).join(''),
       data: Array.from(encryptedData).map(b => b.toString(16).padStart(2, '0')).join(''),
       tag: Array.from(tag).map(b => b.toString(16).padStart(2, '0')).join('')
@@ -225,36 +238,16 @@ class SharingService {
   }
 
   /**
-   * Decrypt data that was encrypted for the current user using their public key
+   * Decrypt data that was encrypted for a specific wallet address
    */
-  private async decryptFromRecipient(encryptedData: EncryptedData, userPublicKey: string): Promise<string> {
+  async decryptFromRecipient(encryptedData: EncryptedData, recipientAddress: string): Promise<string> {
     // Convert hex strings back to Uint8Arrays
-    const salt = new Uint8Array(encryptedData.salt.match(/.{2}/g)!.map(byte => parseInt(byte, 16)));
     const iv = new Uint8Array(encryptedData.iv.match(/.{2}/g)!.map(byte => parseInt(byte, 16)));
     const data = new Uint8Array(encryptedData.data.match(/.{2}/g)!.map(byte => parseInt(byte, 16)));
     const tag = new Uint8Array(encryptedData.tag.match(/.{2}/g)!.map(byte => parseInt(byte, 16)));
     
-    // Derive key from user's public key (same as encryption)
-    const keyMaterial = await crypto.subtle.importKey(
-      'raw',
-      new TextEncoder().encode(userPublicKey),
-      { name: 'PBKDF2' },
-      false,
-      ['deriveKey']
-    );
-
-    const key = await crypto.subtle.deriveKey(
-      {
-        name: 'PBKDF2',
-        salt: salt,
-        iterations: 100000,
-        hash: 'SHA-256'
-      },
-      keyMaterial,
-      { name: 'AES-GCM', length: 256 },
-      false,
-      ['encrypt', 'decrypt']
-    );
+    // Create decryption key from recipient's address (same as encryption)
+    const key = await this.createKeyFromAddress(recipientAddress, encryptedData.salt);
     
     // Combine data and tag for decryption
     const combinedData = new Uint8Array(data.length + tag.length);

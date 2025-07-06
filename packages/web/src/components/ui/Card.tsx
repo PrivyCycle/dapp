@@ -17,9 +17,9 @@ export const Card: React.FC<CardProps> = ({
   const hoverClasses = hover ? 'hover:shadow-md hover:border-border-accent transition-all duration-300' : '';
   
   const paddingClasses = {
-    sm: 'p-4',
-    md: 'p-6',
-    lg: 'p-8'
+    sm: 'p-3 sm:p-4',
+    md: 'p-4 sm:p-6',
+    lg: 'p-6 sm:p-8'
   };
   
   const classes = `${baseClasses} ${hoverClasses} ${paddingClasses[padding]} ${className}`;
