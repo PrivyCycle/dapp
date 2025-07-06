@@ -42,15 +42,6 @@ PrivyCycle provides a private vault for your cycle data, encrypts everything on-
 
 ---
 
-## Demo & Screenshots
-
-> *Replace these with real assets*  
-> - Onboarding & Login Flow: `docs/onboarding.gif`  
-> - Cycle Calendar & Insights: `docs/calendar.png`  
-> - Doctor & Family Sharing Dashboards: `docs/dashboard.png`  
-> - Gift to Daughter Workflow: `docs/heirloom.gif`  
-
----
 
 ## Architecture Overview
 
