@@ -2,7 +2,7 @@
 
 Your cycle, your data—securely yours.
 
-A Web3-native, end-to-end encrypted period-tracking app with end-to-end encryption, seamless social-login UX, and user-controlled sharing.
+PrivyCycle combines on-device encryption with decentralized storage to secure your menstrual cycle data, enabling private tracking, selective sharing with doctors or loved ones, and perpetual user ownership.
 
 ![Image](https://github.com/user-attachments/assets/0f288780-dfe3-4582-b77d-f7d68ad50f2f)
 ---
@@ -11,7 +11,7 @@ A Web3-native, end-to-end encrypted period-tracking app with end-to-end encrypti
 
 Most period-tracking apps expose or sell intimate cycle data, putting users at risk. Once you log your history, there’s no guarantee you can ever retrieve it—or keep it private if the company folds. Doctors, partners, and future family members have no easy, secure way to access the insights they need, and critical health patterns may be lost forever.
 
-PrivyCycle provides a private vault for your cycle data, encrypts everything on-device, and gives you simple tools to share it only with people you trust.
+PrivyCycle provides a private vault for your cycle data, encrypts everything on-device, and gives you simple tools to share it only with people you trust. It offers innovative features like anonymized data-based AI tips for your partner, doctor, and yourself. 
 
 ---
 
@@ -128,10 +128,11 @@ PrivyCycle provides a private vault for your cycle data, encrypts everything on-
 
 ## Links
 
-- **Repository**: https://github.com/your-org/privycycle *(placeholder)*  
-- **Live Demo**: https://privycycle.app/demo *(placeholder)*  
-- **Architecture Diagram**: `docs/architecture.png`  
-- **Pitch Deck**: `docs/pitch.pdf`  
+* [GitHub](https://github.com/PrivyCycle)
+* [VIDEO DEMO](https://www.canva.com/design/DAGsXCtI-l4/9Bq0yyPueF_2HlAZWOaoJQ/view?utm_content=DAGsXCtI-l4&utm_campaign=designshare&utm_medium=link2&utm_source=uniquelinks&utlId=h405c311b49)
+* [WEBSITE](https://privycycle.vercel.app/)
+* [PRESENTATION](https://www.canva.com/design/DAGsSfnVDLw/4CguIEHdITAcbSrgQ3XjDw/view?utm_content=DAGsSfnVDLw&utm_campaign=designshare&utm_medium=link2&utm_source=uniquelinks&utlId=h88ab9f6080)
+  
 
 ---
 
