@@ -2,8 +2,9 @@
 
 Your cycle, your data—securely yours.
 
-A Web3-native period-tracking app with end-to-end encryption, seamless social-login UX, and user-controlled sharing.
+A Web3-native, end-to-end encrypted period-tracking app with end-to-end encryption, seamless social-login UX, and user-controlled sharing.
 
+![Image](https://github.com/user-attachments/assets/0f288780-dfe3-4582-b77d-f7d68ad50f2f)
 ---
 
 ## Problem Statement
