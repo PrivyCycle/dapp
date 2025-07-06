@@ -2,11 +2,12 @@ import React, { useState } from 'react';
 import { Button } from '../ui/Button';
 import { Card } from '../ui/Card';
 import { useSharing } from '../../hooks/sharing/useSharing';
-import { useContractSharing } from '../../hooks/sharing/useContractSharing';
+import { useSponsoredContractSharing } from '../../hooks/sharing/useSponsoredContractSharing';
 import type { LogEntry } from '../../lib/types/cycle';
 
 // Test recipient key generated for development/testing
-const TEST_RECIPIENT_ADDRESS = '0x26b4afcF397255499F1aDFFFfeBD015F6CdbA10a';
+// Using a different address than the sponsor wallet to avoid "cannot share with yourself" error
+const TEST_RECIPIENT_ADDRESS = '0xFc7251B4834a2514B6CaCEc6918aed100C006918';
 
 interface ShareDataModalProps {
   isOpen: boolean;
@@ -28,7 +29,7 @@ export const ShareDataModal: React.FC<ShareDataModalProps> = ({
   const [error, setError] = useState<string | null>(null);
 
   const sharing = useSharing();
-  const contractSharing = useContractSharing();
+  const contractSharing = useSponsoredContractSharing();
 
   const handleShare = async (): Promise<void> => {
     if (!recipientAddress || entries.length === 0) {

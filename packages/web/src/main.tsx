@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client'
 import { PrivyProvider } from '@privy-io/react-auth'
 import './index.css'
 import App from './App.tsx'
+import './test-gas-sponsorship'
 
 // Development fallback for Privy app ID
 const PRIVY_APP_ID = import.meta.env.VITE_PRIVY_APP_ID || 'clpispdty00ycl80fpueukbhl';
