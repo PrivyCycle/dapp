@@ -68,12 +68,11 @@ class EncryptedIndexedDbService {
   private async encryptAndStore<T>(
     data: T,
     storeName: string,
-    userId: string,
-    signMessage: (message: { message: string }) => Promise<{ signature: string }>
+    userId: string
   ): Promise<void> {
     // Serialize and encrypt the data BEFORE creating the transaction
     const serializedData = JSON.stringify(data);
-    const encryptedData = await this.encryptionService.encrypt(serializedData, userId, signMessage);
+    const encryptedData = await this.encryptionService.encrypt(serializedData, userId);
     
     // Create the encrypted record
     const record: EncryptedRecord = {
@@ -96,8 +95,7 @@ class EncryptedIndexedDbService {
   // Helper method to retrieve and decrypt data
   private async retrieveAndDecrypt<T>(
     storeName: string,
-    userId: string,
-    signMessage: (message: { message: string }) => Promise<{ signature: string }>
+    userId: string
   ): Promise<T[]> {
     const db = await this.ensureDb();
     const transaction = db.transaction([storeName], 'readonly');
@@ -112,7 +110,7 @@ class EncryptedIndexedDbService {
           
           for (const record of encryptedRecords) {
             try {
-              const decryptedJson = await this.encryptionService.decrypt(record.encryptedData, userId, signMessage);
+              const decryptedJson = await this.encryptionService.decrypt(record.encryptedData, userId);
               const parsedData = JSON.parse(decryptedJson);
               
               // Convert date strings back to Date objects for LogEntry
@@ -160,27 +158,24 @@ class EncryptedIndexedDbService {
   // Log Entries Operations
   async saveLogEntry(
     entry: LogEntry,
-    userId: string,
-    signMessage: (message: { message: string }) => Promise<{ signature: string }>
+    userId: string
   ): Promise<void> {
-    return this.encryptAndStore(entry, STORES.LOG_ENTRIES, userId, signMessage);
+    return this.encryptAndStore(entry, STORES.LOG_ENTRIES, userId);
   }
 
   async getLogEntries(
-    userId: string,
-    signMessage: (message: { message: string }) => Promise<{ signature: string }>
+    userId: string
   ): Promise<LogEntry[]> {
-    return this.retrieveAndDecrypt<LogEntry>(STORES.LOG_ENTRIES, userId, signMessage);
+    return this.retrieveAndDecrypt<LogEntry>(STORES.LOG_ENTRIES, userId);
   }
 
   async updateLogEntry(
     id: string,
     updates: Partial<LogEntry>,
-    userId: string,
-    signMessage: (message: { message: string }) => Promise<{ signature: string }>
+    userId: string
   ): Promise<void> {
     // Get existing entry
-    const entries = await this.getLogEntries(userId, signMessage);
+    const entries = await this.getLogEntries(userId);
     const existingEntry = entries.find(entry => entry.id === id);
     
     if (!existingEntry) {
@@ -189,7 +184,7 @@ class EncryptedIndexedDbService {
     
     // Update and save
     const updatedEntry = { ...existingEntry, ...updates };
-    return this.saveLogEntry(updatedEntry, userId, signMessage);
+    return this.saveLogEntry(updatedEntry, userId);
   }
 
   async deleteLogEntry(id: string): Promise<void> {
@@ -207,33 +202,29 @@ class EncryptedIndexedDbService {
   // Cycle Data Operations
   async saveCycleData(
     cycle: CycleData,
-    userId: string,
-    signMessage: (message: { message: string }) => Promise<{ signature: string }>
+    userId: string
   ): Promise<void> {
-    return this.encryptAndStore(cycle, STORES.CYCLE_DATA, userId, signMessage);
+    return this.encryptAndStore(cycle, STORES.CYCLE_DATA, userId);
   }
 
   async getCycleData(
-    userId: string,
-    signMessage: (message: { message: string }) => Promise<{ signature: string }>
+    userId: string
   ): Promise<CycleData[]> {
-    return this.retrieveAndDecrypt<CycleData>(STORES.CYCLE_DATA, userId, signMessage);
+    return this.retrieveAndDecrypt<CycleData>(STORES.CYCLE_DATA, userId);
   }
 
   // Predictions Operations
   async savePrediction(
     prediction: Prediction & { id: string },
-    userId: string,
-    signMessage: (message: { message: string }) => Promise<{ signature: string }>
+    userId: string
   ): Promise<void> {
-    return this.encryptAndStore(prediction, STORES.PREDICTIONS, userId, signMessage);
+    return this.encryptAndStore(prediction, STORES.PREDICTIONS, userId);
   }
 
   async getPredictions(
-    userId: string,
-    signMessage: (message: { message: string }) => Promise<{ signature: string }>
+    userId: string
   ): Promise<(Prediction & { id: string })[]> {
-    return this.retrieveAndDecrypt<Prediction & { id: string }>(STORES.PREDICTIONS, userId, signMessage);
+    return this.retrieveAndDecrypt<Prediction & { id: string }>(STORES.PREDICTIONS, userId);
   }
 
   // Utility method to clear all data (for testing/reset)
@@ -262,11 +253,7 @@ class EncryptedIndexedDbService {
     await Promise.all(promises);
   }
 
-  // Clear encryption cache (call on logout)
-  clearEncryptionCache(): void {
-    this.encryptionService.clearCache();
-  }
 }
 
 // Export a singleton instance
-export const encryptedIndexedDbService = new EncryptedIndexedDbService(); 
+export const encryptedIndexedDbService = new EncryptedIndexedDbService();

@@ -14,121 +14,21 @@ export interface EncryptedData {
   tag: string;
 }
 
+/**
+ * Encryption service that leverages Privy's session management
+ */
 class PrivyEncryptionService {
-  private cachedSignature: string | null = null;
-  private cachedUserId: string | null = null;
-
   /**
-   * Check if wallet is ready for signing operations
+   * Derive encryption key from user ID and salt using deterministic approach
    */
-  private async isWalletReady(): Promise<boolean> {
-    try {
-      // Add a small delay to ensure wallet is fully initialized
-      await new Promise(resolve => setTimeout(resolve, 100));
-      return true;
-    } catch {
-      return false;
-    }
-  }
-
-  /**
-   * Generate a deterministic signature using Privy wallet
-   */
-  private async generateWalletSignature(userId: string, signMessage: (message: { message: string }) => Promise<{ signature: string }>): Promise<string> {
-    // Check if we have a cached signature for this user
-    if (this.cachedSignature && this.cachedUserId === userId) {
-      console.log('🔑 Using cached wallet signature for user:', userId);
-      return this.cachedSignature;
-    }
-
-    // Ensure wallet is ready before attempting signature
-    const walletReady = await this.isWalletReady();
-    if (!walletReady) {
-      throw new Error('Wallet not ready for signing operations. Please wait a moment and try again.');
-    }
-
-    // Create a deterministic message based on user ID and app context
-    const message = `ConsentCycle-Encryption-Key-${userId}-${ENCRYPTION_VERSION}`;
+  private async deriveKeyFromUserId(userId: string, salt: Uint8Array): Promise<CryptoKey> {
+    // Create a deterministic seed from user ID
+    const userSeed = new TextEncoder().encode(`PrivyCycle-${userId}-${ENCRYPTION_VERSION}`);
     
-    console.log('🔑 Generating wallet signature for user:', userId);
-    
-    // Retry logic for wallet signature generation
-    const maxRetries = 3;
-    let lastError: Error | unknown;
-    
-    for (let attempt = 1; attempt <= maxRetries; attempt++) {
-      try {
-        console.log(`🔑 Signature attempt ${attempt}/${maxRetries}`);
-        
-        // Add progressive delay between retries
-        if (attempt > 1) {
-          const delay = Math.min(1000 * Math.pow(2, attempt - 1), 5000); // Exponential backoff, max 5s
-          console.log(`⏳ Waiting ${delay}ms before retry...`);
-          await new Promise(resolve => setTimeout(resolve, delay));
-        }
-        
-        const result = await signMessage({ message });
-        console.log('✅ Wallet signature generated successfully');
-        
-        // Cache the signature for this session
-        this.cachedSignature = result.signature;
-        this.cachedUserId = userId;
-        
-        return result.signature;
-      } catch (error) {
-        lastError = error;
-        console.warn(`❌ Signature attempt ${attempt} failed:`, error);
-        
-        // Check if this is a wallet connectivity issue that might resolve with retry
-        if (error instanceof Error) {
-          const isRetryableError = 
-            error.message.includes('Unable to connect to wallet') || 
-            error.message.includes('provider_error') ||
-            error.message.includes('Wallet did not respond') ||
-            error.message.includes('User rejected') ||
-            error.message.includes('timeout');
-          
-          if (isRetryableError && attempt < maxRetries) {
-            console.log(`🔄 Retrying signature generation (${attempt + 1}/${maxRetries})...`);
-            continue;
-          } else if (error.message.includes('User rejected') || error.message.includes('denied')) {
-            // User explicitly rejected, don't retry
-            throw new Error('Signature request was rejected. Encryption requires wallet signature to secure your data.');
-          }
-        }
-        
-        // For non-retryable errors or final attempt, break
-        if (attempt === maxRetries) {
-          break;
-        }
-      }
-    }
-    
-    console.error('❌ Failed to generate wallet signature after all retries:', lastError);
-    
-    // Provide more helpful error messages based on the error type
-    if (lastError instanceof Error) {
-      if (lastError.message.includes('Unable to connect')) {
-        throw new Error('Unable to connect to wallet. Please ensure your wallet is unlocked and try again.');
-      } else if (lastError.message.includes('timeout')) {
-        throw new Error('Wallet signature request timed out. Please try again.');
-      }
-    }
-    
-    throw new Error(`Failed to generate wallet signature: ${lastError}`);
-  }
-
-  /**
-   * Derive encryption key from wallet signature
-   */
-  private async deriveKeyFromSignature(signature: string, salt: Uint8Array): Promise<CryptoKey> {
-    // Convert signature to bytes
-    const signatureBytes = new TextEncoder().encode(signature);
-    
-    // Import the signature as key material
+    // Import the seed as key material
     const keyMaterial = await crypto.subtle.importKey(
       'raw',
-      signatureBytes,
+      userSeed,
       { name: 'PBKDF2' },
       false,
       ['deriveKey']
@@ -152,31 +52,15 @@ class PrivyEncryptionService {
   }
 
   /**
-   * Get encryption key for the current user with given salt
+   * Encrypt data using AES-GCM with user-derived key
    */
-  private async getEncryptionKey(userId: string, signMessage: (message: { message: string }) => Promise<{ signature: string }>, salt: Uint8Array): Promise<CryptoKey> {
-    // Get the consistent signature for this user
-    const signature = await this.generateWalletSignature(userId, signMessage);
-    
-    // Derive key using the signature and the provided salt
-    const key = await this.deriveKeyFromSignature(signature, salt);
-    
-    return key;
-  }
-
-  /**
-   * Encrypt data using AES-GCM
-   */
-  async encrypt(data: string, userId: string, signMessage: (message: { message: string }) => Promise<{ signature: string }>): Promise<EncryptedData> {
-    console.log('🔐 Starting encryption for user:', userId);
-    
+  async encrypt(data: string, userId: string): Promise<EncryptedData> {
     try {
       // Generate a random salt for this encryption
       const salt = crypto.getRandomValues(new Uint8Array(SALT_LENGTH));
       
       // Get encryption key
-      const key = await this.getEncryptionKey(userId, signMessage, salt);
-      console.log('✅ Encryption key obtained');
+      const key = await this.deriveKeyFromUserId(userId, salt);
       
       // Generate random IV
       const iv = crypto.getRandomValues(new Uint8Array(IV_LENGTH));
@@ -193,8 +77,6 @@ class PrivyEncryptionService {
       const encryptedData = new Uint8Array(encryptedBuffer.slice(0, -TAG_LENGTH));
       const tag = new Uint8Array(encryptedBuffer.slice(-TAG_LENGTH));
       
-      console.log('✅ Data encrypted successfully');
-      
       return {
         version: ENCRYPTION_VERSION,
         salt: Array.from(salt).map(b => b.toString(16).padStart(2, '0')).join(''),
@@ -209,11 +91,9 @@ class PrivyEncryptionService {
   }
 
   /**
-   * Decrypt data using AES-GCM
+   * Decrypt data using AES-GCM with user-derived key
    */
-  async decrypt(encryptedData: EncryptedData, userId: string, signMessage: (message: { message: string }) => Promise<{ signature: string }>): Promise<string> {
-    console.log('🔓 Starting decryption for user:', userId);
-    
+  async decrypt(encryptedData: EncryptedData, userId: string): Promise<string> {
     try {
       // Validate version
       if (encryptedData.version !== ENCRYPTION_VERSION) {
@@ -227,8 +107,7 @@ class PrivyEncryptionService {
       const tag = new Uint8Array(encryptedData.tag.match(/.{2}/g)!.map(byte => parseInt(byte, 16)));
       
       // Get decryption key using the salt from the encrypted data
-      const key = await this.getEncryptionKey(userId, signMessage, salt);
-      console.log('✅ Decryption key obtained');
+      const key = await this.deriveKeyFromUserId(userId, salt);
       
       // Combine data and tag for decryption
       const combinedData = new Uint8Array(data.length + tag.length);
@@ -242,10 +121,7 @@ class PrivyEncryptionService {
         combinedData
       );
       
-      const result = new TextDecoder().decode(decryptedBuffer);
-      console.log('✅ Data decrypted successfully');
-      
-      return result;
+      return new TextDecoder().decode(decryptedBuffer);
     } catch (error) {
       console.error('❌ Decryption failed:', error);
       throw new Error(`Decryption failed: ${error}`);
@@ -253,50 +129,164 @@ class PrivyEncryptionService {
   }
 
   /**
-   * Clear cached signature (call on logout)
+   * Encrypt data for a specific recipient using their public key
    */
-  clearCache(): void {
-    this.cachedSignature = null;
-    this.cachedUserId = null;
+  async encryptForRecipient(data: string, recipientPublicKey: string): Promise<EncryptedData> {
+    try {
+      const salt = crypto.getRandomValues(new Uint8Array(SALT_LENGTH));
+      
+      // Derive key from recipient's public key
+      const keyMaterial = await crypto.subtle.importKey(
+        'raw',
+        new TextEncoder().encode(recipientPublicKey),
+        { name: 'PBKDF2' },
+        false,
+        ['deriveKey']
+      );
+
+      const key = await crypto.subtle.deriveKey(
+        {
+          name: 'PBKDF2',
+          salt: salt,
+          iterations: 100000,
+          hash: 'SHA-256'
+        },
+        keyMaterial,
+        { name: 'AES-GCM', length: 256 },
+        false,
+        ['encrypt', 'decrypt']
+      );
+      
+      // Generate random IV
+      const iv = crypto.getRandomValues(new Uint8Array(IV_LENGTH));
+      
+      // Encrypt the data
+      const encodedData = new TextEncoder().encode(data);
+      const encryptedBuffer = await crypto.subtle.encrypt(
+        { name: 'AES-GCM', iv },
+        key,
+        encodedData
+      );
+      
+      // Extract the encrypted data and tag
+      const encryptedData = new Uint8Array(encryptedBuffer.slice(0, -TAG_LENGTH));
+      const tag = new Uint8Array(encryptedBuffer.slice(-TAG_LENGTH));
+      
+      return {
+        version: ENCRYPTION_VERSION,
+        salt: Array.from(salt).map(b => b.toString(16).padStart(2, '0')).join(''),
+        iv: Array.from(iv).map(b => b.toString(16).padStart(2, '0')).join(''),
+        data: Array.from(encryptedData).map(b => b.toString(16).padStart(2, '0')).join(''),
+        tag: Array.from(tag).map(b => b.toString(16).padStart(2, '0')).join('')
+      };
+    } catch (error) {
+      console.error('❌ Encryption for recipient failed:', error);
+      throw new Error(`Encryption for recipient failed: ${error}`);
+    }
+  }
+
+  /**
+   * Decrypt data that was encrypted for the current user using their public key
+   */
+  async decryptFromRecipient(encryptedData: EncryptedData, userPublicKey: string): Promise<string> {
+    try {
+      // Validate version
+      if (encryptedData.version !== ENCRYPTION_VERSION) {
+        throw new Error(`Unsupported encryption version: ${encryptedData.version}`);
+      }
+      
+      // Convert hex strings back to Uint8Arrays
+      const salt = new Uint8Array(encryptedData.salt.match(/.{2}/g)!.map(byte => parseInt(byte, 16)));
+      const iv = new Uint8Array(encryptedData.iv.match(/.{2}/g)!.map(byte => parseInt(byte, 16)));
+      const data = new Uint8Array(encryptedData.data.match(/.{2}/g)!.map(byte => parseInt(byte, 16)));
+      const tag = new Uint8Array(encryptedData.tag.match(/.{2}/g)!.map(byte => parseInt(byte, 16)));
+      
+      // Derive key from user's public key (same as encryption)
+      const keyMaterial = await crypto.subtle.importKey(
+        'raw',
+        new TextEncoder().encode(userPublicKey),
+        { name: 'PBKDF2' },
+        false,
+        ['deriveKey']
+      );
+
+      const key = await crypto.subtle.deriveKey(
+        {
+          name: 'PBKDF2',
+          salt: salt,
+          iterations: 100000,
+          hash: 'SHA-256'
+        },
+        keyMaterial,
+        { name: 'AES-GCM', length: 256 },
+        false,
+        ['encrypt', 'decrypt']
+      );
+      
+      // Combine data and tag for decryption
+      const combinedData = new Uint8Array(data.length + tag.length);
+      combinedData.set(data);
+      combinedData.set(tag, data.length);
+      
+      // Decrypt the data
+      const decryptedBuffer = await crypto.subtle.decrypt(
+        { name: 'AES-GCM', iv },
+        key,
+        combinedData
+      );
+      
+      return new TextDecoder().decode(decryptedBuffer);
+    } catch (error) {
+      console.error('❌ Decryption from recipient failed:', error);
+      throw new Error(`Decryption from recipient failed: ${error}`);
+    }
   }
 }
 
 // Hook to use Privy encryption service
 export const usePrivyEncryption = () => {
-  const { signMessage, user } = usePrivy();
+  const { user, ready, authenticated } = usePrivy();
 
   const encryptionService = new PrivyEncryptionService();
 
-  // Wrapper to adapt Privy's signMessage to our internal interface
-  const adaptedSignMessage = async (message: { message: string }): Promise<{ signature: string }> => {
-    return await signMessage(message);
-  };
-
   const encrypt = async (data: string): Promise<EncryptedData> => {
-    if (!user?.id) {
-      throw new Error('User not authenticated');
+    if (!ready) {
+      throw new Error('Privy is not ready yet. Please wait for initialization to complete.');
     }
     
-    return encryptionService.encrypt(data, user.id, adaptedSignMessage);
+    if (!authenticated) {
+      throw new Error('User must be authenticated to encrypt data.');
+    }
+    
+    if (!user?.id) {
+      throw new Error('User ID not available. Please ensure you are properly authenticated.');
+    }
+    
+    return encryptionService.encrypt(data, user.id);
   };
 
   const decrypt = async (encryptedData: EncryptedData): Promise<string> => {
-    if (!user?.id) {
-      throw new Error('User not authenticated');
+    if (!ready) {
+      throw new Error('Privy is not ready yet. Please wait for initialization to complete.');
     }
     
-    return encryptionService.decrypt(encryptedData, user.id, adaptedSignMessage);
-  };
-
-  const clearCache = () => {
-    encryptionService.clearCache();
+    if (!authenticated) {
+      throw new Error('User must be authenticated to decrypt data.');
+    }
+    
+    if (!user?.id) {
+      throw new Error('User ID not available. Please ensure you are properly authenticated.');
+    }
+    
+    return encryptionService.decrypt(encryptedData, user.id);
   };
 
   return {
     encrypt,
     decrypt,
-    clearCache,
-    isReady: !!user?.id
+    encryptForRecipient: encryptionService.encryptForRecipient.bind(encryptionService),
+    decryptFromRecipient: encryptionService.decryptFromRecipient.bind(encryptionService),
+    isReady: ready && authenticated && !!user?.id
   };
 };
 

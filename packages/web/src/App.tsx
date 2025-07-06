@@ -13,11 +13,11 @@ const Navigation: React.FC = () => {
   const { user, logout } = useAuth();
   
   const navItems = [
-    { path: '/', label: 'Home', icon: '🏠' },
-    { path: '/partner', label: 'Partner', icon: '💕' },
-    { path: '/family', label: 'Family', icon: '👨‍👩‍👧‍👦' },
-    { path: '/doctor', label: 'Doctor', icon: '🏥' },
-    { path: '/settings', label: 'Settings', icon: '⚙️' }
+    { path: '/', label: 'Home', icon: 'home' },
+    { path: '/partner', label: 'Partner', icon: 'heart' },
+    { path: '/family', label: 'Family', icon: 'users' },
+    { path: '/doctor', label: 'Doctor', icon: 'medical' },
+    { path: '/settings', label: 'Settings', icon: 'settings' }
   ];
 
   const handleLogout = async (): Promise<void> => {
@@ -35,7 +35,7 @@ const Navigation: React.FC = () => {
             
             <div className="flex items-center space-x-3">
               <div className="text-xs text-text-muted hidden sm:block">
-                🔒 Encrypted
+                Encrypted
               </div>
               {user && (
                 <button
@@ -63,7 +63,13 @@ const Navigation: React.FC = () => {
                   : 'text-text-muted hover:text-text-primary'
               }`}
             >
-              <span className="text-lg">{item.icon}</span>
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                {item.icon === 'home' && <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />}
+                {item.icon === 'heart' && <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />}
+                {item.icon === 'users' && <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />}
+                {item.icon === 'medical' && <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />}
+                {item.icon === 'settings' && <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />}
+              </svg>
               <span className="text-xs font-medium">{item.label}</span>
             </Link>
           ))}
@@ -83,7 +89,13 @@ const Navigation: React.FC = () => {
                   : 'text-text-secondary hover:text-text-primary hover:bg-bg-tertiary'
               }`}
             >
-              <span className="text-xl">{item.icon}</span>
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                {item.icon === 'home' && <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />}
+                {item.icon === 'heart' && <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />}
+                {item.icon === 'users' && <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />}
+                {item.icon === 'medical' && <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />}
+                {item.icon === 'settings' && <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />}
+              </svg>
               <span className="font-medium">{item.label}</span>
             </Link>
           ))}
@@ -92,7 +104,7 @@ const Navigation: React.FC = () => {
         {/* Desktop User Info */}
         <div className="absolute bottom-4 left-4 right-4">
           <div className="p-3 bg-bg-tertiary rounded-lg">
-            <div className="text-xs text-text-muted mb-1">🔒 All data encrypted</div>
+            <div className="text-xs text-text-muted mb-1">All data encrypted</div>
             {user && (
               <div className="text-sm text-text-secondary truncate">
                 {user.email || 'User'}

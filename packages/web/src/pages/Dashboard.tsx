@@ -8,6 +8,8 @@ import { usePrivy } from '@privy-io/react-auth';
 import { LogEntryModal } from '../components/logging/LogEntryModal';
 import { LogEntryWizard } from '../components/logging/LogEntryWizard';
 import { AllEntriesModal } from '../components/logging/AllEntriesModal';
+import { ShareDataModal } from '../components/sharing/ShareDataModal';
+import { SharedDataViewer } from '../components/sharing/SharedDataViewer';
 import { type LogEntry } from '../lib/types/cycle';
 
 export const Dashboard: React.FC = () => {
@@ -27,6 +29,15 @@ export const Dashboard: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isWizardOpen, setIsWizardOpen] = useState(false);
   const [isAllEntriesOpen, setIsAllEntriesOpen] = useState(false);
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+  const [isSharedDataViewerOpen, setIsSharedDataViewerOpen] = useState(false);
+
+  // Auto-initialize when authenticated and ready
+  React.useEffect(() => {
+    if (authenticated && ready && !isInitialized && !entriesLoading) {
+      initializeData();
+    }
+  }, [authenticated, ready, isInitialized, entriesLoading, initializeData]);
 
   // Handle log entry click
   const handleLogEntryClick = (entry: LogEntry): void => {
@@ -65,7 +76,7 @@ export const Dashboard: React.FC = () => {
   }
 
   // Show initialization screen when authenticated but data not initialized
-  if (authenticated && ready && !isInitialized && !entriesLoading) {
+  if (authenticated && ready && !isInitialized && entriesLoading) {
     return (
       <div className="min-h-screen bg-bg-primary">
         {/* Clean Header */}
@@ -425,6 +436,32 @@ export const Dashboard: React.FC = () => {
                     </svg>
                     Add Note
                   </Button>
+                  {hasData && (
+                    <>
+                      <div className="border-t border-border-primary my-3"></div>
+                      <Button 
+                        variant="secondary" 
+                        className="w-full justify-start"
+                        onClick={() => setIsShareModalOpen(true)}
+                      >
+                        <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z" />
+                        </svg>
+                        Share Data
+                      </Button>
+                      <Button 
+                        variant="ghost" 
+                        className="w-full justify-start"
+                        onClick={() => setIsSharedDataViewerOpen(true)}
+                      >
+                        <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                        </svg>
+                        View Shared Data
+                      </Button>
+                    </>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -538,6 +575,35 @@ export const Dashboard: React.FC = () => {
         entries={entries}
         onEntryClick={handleLogEntryClick}
       />
+
+      <ShareDataModal
+        isOpen={isShareModalOpen}
+        onClose={() => setIsShareModalOpen(false)}
+        entries={entries}
+        onShareComplete={(result) => {
+          console.log('Share completed:', result);
+          setIsShareModalOpen(false);
+        }}
+      />
+
+      {isSharedDataViewerOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="w-full max-w-4xl mx-4 h-[80vh] bg-white rounded-lg overflow-hidden">
+            <div className="flex justify-between items-center p-4 border-b">
+              <h2 className="text-xl font-semibold">Shared Data</h2>
+              <button
+                onClick={() => setIsSharedDataViewerOpen(false)}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                ✕
+              </button>
+            </div>
+            <div className="h-full overflow-y-auto">
+              <SharedDataViewer />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

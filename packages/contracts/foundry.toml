@@ -4,5 +4,15 @@ out = "out"
 libs = ["lib"]
 test = "test"
 script = "script"
+optimizer = true
+optimizer_runs = 200
+via_ir = true
 
 # See more config options https://github.com/foundry-rs/foundry/blob/master/crates/config/README.md#all-options 
+
+# Network configurations
+[rpc_endpoints]
+zircuit_testnet = "https://garfield-testnet.zircuit.com"
+
+[etherscan]
+zircuit_testnet = { key = "${ETHERSCAN_API_KEY}", url = "https://explorer.testnet.zircuit.com/api" }
