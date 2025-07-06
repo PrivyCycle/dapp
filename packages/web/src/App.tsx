@@ -26,12 +26,12 @@ const Navigation: React.FC = () => {
 
   return (
     <>
-      <header className="bg-bg-secondary border-b border-border-primary safe-area-inset h-16">
+      <header className="bg-bg-secondary border-b border-border-primary safe-area-inset h-20">
         <div className="px-4 py-3 h-full">
           <div className="flex items-center justify-between h-full">
-            <Link to="/" className="flex items-center space-x-2 h-full overflow-hidden">
-              <div className="h-12 w-auto overflow-hidden flex items-center">
-                <Logo variant="full" className="h-20 w-auto transform scale-150 origin-center" />
+            <Link to="/" className="flex items-center h-full">
+              <div className="h-full w-auto flex items-center min-w-[200px]">
+                <Logo variant="full" className="h-28 w-auto max-w-none" />
               </div>
             </Link>
             

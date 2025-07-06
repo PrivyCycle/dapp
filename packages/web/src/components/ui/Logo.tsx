@@ -3,7 +3,7 @@ import React from 'react';
 interface LogoProps {
   variant?: 'full' | 'compact' | 'y-mark';
   className?: string;
-  size?: 'sm' | 'md' | 'lg';
+  size?: 'sm' | 'md' | 'lg' | 'xl' | 'header';
 }
 
 export const Logo: React.FC<LogoProps> = ({ 
@@ -14,7 +14,9 @@ export const Logo: React.FC<LogoProps> = ({
   const sizeClasses = {
     sm: 'h-6',
     md: 'h-8',
-    lg: 'h-12'
+    lg: 'h-12',
+    xl: 'h-16',
+    header: 'h-20'
   };
 
   const baseClasses = `${sizeClasses[size]} w-auto ${className}`;
@@ -22,7 +24,7 @@ export const Logo: React.FC<LogoProps> = ({
   if (variant === 'full') {
     return (
       <img 
-        src="/full-logo.svg" 
+        src="/logo.svg" 
         alt="PrivyCycle" 
         className={baseClasses}
       />
